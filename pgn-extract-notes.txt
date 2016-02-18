@@ -1,0 +1,1 @@
+./pgn-extract/pgn-extract --nomovenumbers --notags --noresults -Wlalg
