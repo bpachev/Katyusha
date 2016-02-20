@@ -197,6 +197,8 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "d")          sync_cout << pos << sync_endl;
       else if (token == "eval")       sync_cout << Eval::trace(pos) << sync_endl;
       else if (token == "raw_eval")   sync_cout << Eval::evaluate(pos) << sync_endl;
+      else if (token == "analyze_game_list") Analyze::game_list(is);
+      else if (token == "analyze_pos_list")  Analyze::game_list(is);
       else if (token == "perft")
       {
           int depth;
