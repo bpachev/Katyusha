@@ -29,7 +29,7 @@
 #include "thread.h"
 #include "timeman.h"
 #include "uci.h"
-
+#include "analyze.h"
 using namespace std;
 
 extern void benchmark(const Position& pos, istream& is);
@@ -197,8 +197,8 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "d")          sync_cout << pos << sync_endl;
       else if (token == "eval")       sync_cout << Eval::trace(pos) << sync_endl;
       else if (token == "raw_eval")   sync_cout << Eval::evaluate(pos) << sync_endl;
-      else if (token == "analyze_game_list") Analyze::game_list(is);
-      else if (token == "analyze_pos_list")  Analyze::game_list(is);
+      else if (token == "analyze_game_list") {Analyze::game_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "analyze_pos_list")  {Analyze::pos_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "perft")
       {
           int depth;

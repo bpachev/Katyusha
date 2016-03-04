@@ -26,7 +26,8 @@
 
 namespace Analyze {
 
-void game_list(istringstream& is);
-void pos_list(istringstream& is);
+void game_list(std::istringstream& is);
+void pos_list(std::istringstream& is);
+}
 
 #endif // #ifndef ANALYZE_H_INCLUDED

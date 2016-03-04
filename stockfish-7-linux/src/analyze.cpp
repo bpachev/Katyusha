@@ -33,21 +33,147 @@
 
 using namespace std;
 
-void game_list(istringstream& is);
+namespace {
+
+const char* StartFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+Search::StateStackPtr SetupStates;
+
+double to_cp(Value v) { return double(v) / PawnValueEg; }
+
+double centipawn_evaluate(Position& pos)
+{
+  Value v = Eval::evaluate<true>(pos);
+  v = pos.side_to_move() == WHITE ? v : -v; // White's point of view
+  return to_cp(v); //convert to centipawns
+}
+
+double evaluate_fen(string fen)
+{
+  Position pos(fen, false, Threads.main());
+  return centipawn_evaluate(pos);
+}
+
+string analyze_game(string& moves)
+{
+   SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+
+    istringstream is(moves);
+
+    std::stringstream ss;
+    string token;
+    Move m;
+    Position pos(StartFEN, false, Threads.main());
+    ss << centipawn_evaluate(pos);
+
+    // Parse move list
+    while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
+    {
+        SetupStates->push(StateInfo());
+        pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+        ss << "," << centipawn_evaluate(pos);
+    }
+    return ss.str();
+}
+
+}//namespace
+
+
+void output_game(ostream& out, string& mov_str)
+{
+ out << analyze_game(mov_str) << "\n";
+}
+
+/*
+ Reads in a file of games, and writes the static evaluation move-by-move to the given outputfile.
+*/
+void Analyze::game_list(istringstream& is)
 {
   string infile;
   string ofile;
   if ( !(is >> infile) || !(is >> ofile)) return;
   fstream f;
   f.open(infile);
+  string line;
+  ofstream out;
+  out.open(ofile);
+
+  string mov_str;
+  while (getline(f, line))
+  {
+    if (line.length())
+    {
+      mov_str += line;
+      mov_str += " "; //so there will be a space between moves
+    }
+    else
+    {
+      output_game(out, mov_str);
+      mov_str = "";
+    }
+  }
+
+  if (mov_str.length())
+  {
+    output_game(out, mov_str);
+  }
+
+  f.close();
+  out.close();
 }
 
-void pos_list(istringstream& is);
+/*
+
+*/
+void Analyze::pos_list(istringstream& is)
 {
   string infile;
   string ofile;
   if ( !(is >> infile) || !(is >> ofile)) return;
   fstream f;
-  f.open(infile);  
+  f.open(infile);
+  string line;
+  ofstream out;
+  out.open(ofile);
+  while(getline(f, line))
+  {
+    if (line.length()) {
+      double e = evaluate_fen(line);
+      out << line << '\n' <<  e << '\n';
+    }
+  }
+  f.close();
+  out.close();
 }
 
+
+//extract a feature representation from the position pos
+//The features are as follows
+// Side to move:
+// Castling WK, WQ, BK, BQ
+
+#define NFEATURES 400
+
+#define TEMPO_FEATURE 0
+#define WCASTLE_OO 1
+#define WCASTLE_OOO 2
+#define BCASTLE_OO 3
+#define BCASTLE_OOO 4
+
+//utility function to convert Stockfish's internal feature representation into a feature vector I can use to train Katusha.
+void Analyze::Katyusha_pos_rep(Position& pos)
+{
+  int * features = (int*)malloc(sizeof(int) * NFEATURES);
+  std::memeset(features, 0, sizeof(int)*NFEATURES);
+  if (pos.side_to_move() == WHITE)
+  {
+    features[TEMPO_FEATURE] = 1;
+  }
+  else features[TEMPO_FEATURE] = 0;
+
+  features[WCASTLE_OO] = pos.can_castle(WHITE_OO);
+  features[WCASTLE_OOO] = pos.can_castle(WHITE_OOO);
+  features[BCASTLE_OO] = pos.can_castle(BLACK_OO);
+  features[BCASTLE_OOO] = pos.can_castle(BLACK_OOO);
+  
+}

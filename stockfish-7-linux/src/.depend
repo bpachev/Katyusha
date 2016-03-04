@@ -38,10 +38,13 @@ timeman.o: timeman.cpp search.h misc.h types.h position.h bitboard.h \
 tt.o: tt.cpp bitboard.h types.h tt.h misc.h
 uci.o: uci.cpp evaluate.h types.h movegen.h position.h bitboard.h \
  search.h misc.h thread.h material.h endgame.h movepick.h pawns.h \
- thread_win32.h timeman.h uci.h
+ thread_win32.h timeman.h uci.h analyze.h
 ucioption.o: ucioption.cpp misc.h types.h search.h position.h bitboard.h \
  thread.h material.h endgame.h movepick.h movegen.h pawns.h \
  thread_win32.h tt.h uci.h syzygy/tbprobe.h syzygy/../search.h
+analyze.o: analyze.cpp evaluate.h types.h movegen.h position.h bitboard.h \
+ search.h misc.h thread.h material.h endgame.h movepick.h pawns.h \
+ thread_win32.h timeman.h uci.h analyze.h
 tbprobe.o: syzygy/tbprobe.cpp syzygy/../position.h syzygy/../bitboard.h \
  syzygy/../types.h syzygy/../movegen.h syzygy/../bitboard.h \
  syzygy/../search.h syzygy/../misc.h syzygy/../position.h \
