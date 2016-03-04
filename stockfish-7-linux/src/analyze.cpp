@@ -154,26 +154,80 @@ void Analyze::pos_list(istringstream& is)
 
 #define NFEATURES 400
 
-#define TEMPO_FEATURE 0
-#define WCASTLE_OO 1
-#define WCASTLE_OOO 2
-#define BCASTLE_OO 3
-#define BCASTLE_OOO 4
+enum feature {
+   TEMPO_FEATURE,
+   WCASTLE_OO,
+   WCASTLE_OOO,
+   BCASTLE_OO,
+   BCASTLE_OOO,
+   NUM_WQ,
+   NUM_WR
+   NUM_WB,
+   NUM_WN,
+   NUM_WP,
+   NUM_BQ,
+   NUM_BR
+   NUM_BB,
+   NUM_BN,
+   NUM_BP,
+
+   WQ_EXISTS,
+   BQ_EXISTS,
+   WR_EXISTS,
+   BR_EXISTS,
+   WB_EXISTS,
+   BB_EXISTS,
+
+};
 
 //utility function to convert Stockfish's internal feature representation into a feature vector I can use to train Katusha.
+// NOTE: this feature representation is based on that used by Giraffe, with some tweaks.
 void Analyze::Katyusha_pos_rep(Position& pos)
 {
+  int i;
   int * features = (int*)malloc(sizeof(int) * NFEATURES);
   std::memeset(features, 0, sizeof(int)*NFEATURES);
+
+  //tempo
   if (pos.side_to_move() == WHITE)
   {
     features[TEMPO_FEATURE] = 1;
   }
   else features[TEMPO_FEATURE] = 0;
 
+  //castling rights
   features[WCASTLE_OO] = pos.can_castle(WHITE_OO);
   features[WCASTLE_OOO] = pos.can_castle(WHITE_OOO);
   features[BCASTLE_OO] = pos.can_castle(BLACK_OO);
   features[BCASTLE_OOO] = pos.can_castle(BLACK_OOO);
-  
+
+  //material configuration
+  features[NUM_WQ] = <QUEEN>pos.count(WHITE);
+  features[NUM_WR] = <ROOK>pos.count(WHITE);
+  features[NUM_WB] = <BISHOP>pos.count(WHITE);
+  features[NUM_WN] = <KNIGHT>pos.count(WHITE);
+  features[NUM_WP] = <PAWN>pos.count(WHITE);
+  features[NUM_BQ] = <QUEEN>pos.count(BLACK);
+  features[NUM_BR] = <ROOK>pos.count(BLACK);
+  features[NUM_BB] = <BISHOP>pos.count(BLACK);
+  features[NUM_BN] = <KNIGHT>pos.count(BLACK);
+  features[NUM_BP] = <PAWN>pos.count(BLACK);
+
+  //piece coordinates and existence information
+  features[WQ_EXISTS] = (features[NUM_WQ] > 0 ) ? 1 : 0;
+  features[BQ_EXISTS] = (features[NUM_BQ] > 0 ) ? 1 : 0;
+
+// ex of how to get the square list for a piece <PAWN>pos.squares(WHITE);
+//  features[]
+
+  //sliding piece mobility
+
+  //attack and defend maps
+
+
+  //pawn information
+
+  //something about king safety
+
+
 }
