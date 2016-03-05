@@ -127,7 +127,8 @@ public:
   Bitboard attacks_from(Piece pc, Square s) const;
   template<PieceType> Bitboard attacks_from(Square s) const;
   template<PieceType> Bitboard attacks_from(Square s, Color c) const;
-
+  int simple_min_attacker(Square s, Color attacking_side, Bitboard occupied);
+  int simple_min_attacker(Square s, Color c);
   // Properties of moves
   bool legal(Move m, Bitboard pinned) const;
   bool pseudo_legal(const Move m) const;
@@ -298,6 +299,11 @@ inline Bitboard Position::attacks_from<PAWN>(Square s, Color c) const {
 
 inline Bitboard Position::attacks_from(Piece pc, Square s) const {
   return attacks_bb(pc, s, byTypeBB[ALL_PIECES]);
+}
+
+inline int Position::simple_min_attacker(Square s, Color c)
+{
+  return simple_min_attacker(s, c, byTypeBB[ALL_PIECES]);
 }
 
 inline Bitboard Position::attackers_to(Square s) const {

@@ -28,6 +28,7 @@ namespace Analyze {
 
 void game_list(std::istringstream& is);
 void pos_list(std::istringstream& is);
+void Katyusha_pos_rep(Position& pos);
 }
 
 #endif // #ifndef ANALYZE_H_INCLUDED

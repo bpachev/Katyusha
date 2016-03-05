@@ -478,7 +478,22 @@ Bitboard Position::check_blockers(Color c, Color kingColor) const {
 }
 
 
-//int Position::simple_min_attacker(Square s, Bitboard occupied);
+int Position::simple_min_attacker(Square s, Color attacking_side, Bitboard occupied)
+{
+  Color defending_side = ~attacking_side;
+  if (attacks_from<PAWN>(s, defending_side)    & pieces(attacking_side, PAWN))
+  {
+    return PAWN;
+  }
+  if ( attacks_from<KNIGHT>(s)         & pieces(attacking_side, KNIGHT)) return KNIGHT;
+  Bitboard battacks = attacks_bb<BISHOP>(s, occupied);
+  if (battacks & pieces(attacking_side, BISHOP)) return BISHOP;
+  Bitboard rattacks = attacks_bb<ROOK  >(s, occupied);
+  if (rattacks & pieces(attacking_side, ROOK)) return ROOK;
+  if ( (rattacks | battacks) & pieces(attacking_side, QUEEN)) return QUEEN;
+  if ( attacks_from<KING>(s)  & pieces(KING)) return KING;
+  return -1;
+}
 
 
 /// Position::attackers_to() computes a bitboard of all pieces which attack a
