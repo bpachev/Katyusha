@@ -213,17 +213,257 @@ void Analyze::Katyusha_pos_rep(Position& pos)
   features[NUM_BN] = <KNIGHT>pos.count(BLACK);
   features[NUM_BP] = <PAWN>pos.count(BLACK);
 
-  //piece coordinates and existence information
-  features[WQ_EXISTS] = (features[NUM_WQ] > 0 ) ? 1 : 0;
-  features[BQ_EXISTS] = (features[NUM_BQ] > 0 ) ? 1 : 0;
+  //piece-centric information
+  //this consists of coordinates, existence, and mobility
+  //NOTE: the below code is generated using a python script
+  // I am trying to produce reasonably efficient code that is quick to develop and avoids bugs
+  features[WQ1_EXISTS] = (<QUEEN>pos.count(WHITE) >= 1) ? 1 : 0;
+  if (features[WQ1_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[1];
+    features[WQ1_RANK] = piece_sq/8;
+    features[WQ1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(QUEEN,WHITE);
+    features[WQ1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
 
-// ex of how to get the square list for a piece <PAWN>pos.squares(WHITE);
-//  features[]
 
-  //sliding piece mobility
+  features[WR1_EXISTS] = (<ROOK>pos.count(WHITE) >= 1) ? 1 : 0;
+  if (features[WR1_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[1];
+    features[WR1_RANK] = piece_sq/8;
+    features[WR1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(ROOK,WHITE);
+    features[WR1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
 
+  features[WR2_EXISTS] = (<ROOK>pos.count(WHITE) >= 2) ? 1 : 0;
+  if (features[WR2_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[2];
+    features[WR2_RANK] = piece_sq/8;
+    features[WR2_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(ROOK,WHITE);
+    features[WR2_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+
+  features[WB1_EXISTS] = (<BISHOP>pos.count(WHITE) >= 1) ? 1 : 0;
+  if (features[WB1_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[1];
+    features[WB1_RANK] = piece_sq/8;
+    features[WB1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(BISHOP,WHITE);
+    features[WB1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+  features[WB2_EXISTS] = (<BISHOP>pos.count(WHITE) >= 2) ? 1 : 0;
+  if (features[WB2_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[2];
+    features[WB2_RANK] = piece_sq/8;
+    features[WB2_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(BISHOP,WHITE);
+    features[WB2_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+
+  features[WK1_EXISTS] = (<KNIGHT>pos.count(WHITE) >= 1) ? 1 : 0;
+  if (features[WK1_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[1];
+    features[WK1_RANK] = piece_sq/8;
+    features[WK1_FILE] = piece_sq%8;
+  }
+
+  features[WK2_EXISTS] = (<KNIGHT>pos.count(WHITE) >= 2) ? 1 : 0;
+  if (features[WK2_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[2];
+    features[WK2_RANK] = piece_sq/8;
+    features[WK2_FILE] = piece_sq%8;
+  }
+
+
+  features[WP1_EXISTS] = (<PAWN>pos.count(WHITE) >= 1) ? 1 : 0;
+  if (features[WP1_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[1];
+    features[WP1_RANK] = piece_sq/8;
+    features[WP1_FILE] = piece_sq%8;
+  }
+
+  features[WP2_EXISTS] = (<PAWN>pos.count(WHITE) >= 2) ? 1 : 0;
+  if (features[WP2_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[2];
+    features[WP2_RANK] = piece_sq/8;
+    features[WP2_FILE] = piece_sq%8;
+  }
+
+  features[WP3_EXISTS] = (<PAWN>pos.count(WHITE) >= 3) ? 1 : 0;
+  if (features[WP3_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[3];
+    features[WP3_RANK] = piece_sq/8;
+    features[WP3_FILE] = piece_sq%8;
+  }
+
+  features[WP4_EXISTS] = (<PAWN>pos.count(WHITE) >= 4) ? 1 : 0;
+  if (features[WP4_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[4];
+    features[WP4_RANK] = piece_sq/8;
+    features[WP4_FILE] = piece_sq%8;
+  }
+
+  features[WP5_EXISTS] = (<PAWN>pos.count(WHITE) >= 5) ? 1 : 0;
+  if (features[WP5_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[5];
+    features[WP5_RANK] = piece_sq/8;
+    features[WP5_FILE] = piece_sq%8;
+  }
+
+  features[WP6_EXISTS] = (<PAWN>pos.count(WHITE) >= 6) ? 1 : 0;
+  if (features[WP6_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[6];
+    features[WP6_RANK] = piece_sq/8;
+    features[WP6_FILE] = piece_sq%8;
+  }
+
+  features[WP7_EXISTS] = (<PAWN>pos.count(WHITE) >= 7) ? 1 : 0;
+  if (features[WP7_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[7];
+    features[WP7_RANK] = piece_sq/8;
+    features[WP7_FILE] = piece_sq%8;
+  }
+
+  features[WP8_EXISTS] = (<PAWN>pos.count(WHITE) >= 8) ? 1 : 0;
+  if (features[WP8_EXISTS]) {
+    Square piece_sq = pos.squares(WHITE)[8];
+    features[WP8_RANK] = piece_sq/8;
+    features[WP8_FILE] = piece_sq%8;
+  }
+
+
+
+  features[BQ1_EXISTS] = (<QUEEN>pos.count(BLACK) >= 1) ? 1 : 0;
+  if (features[BQ1_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[1];
+    features[BQ1_RANK] = piece_sq/8;
+    features[BQ1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(QUEEN,BLACK);
+    features[BQ1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+
+  features[BR1_EXISTS] = (<ROOK>pos.count(BLACK) >= 1) ? 1 : 0;
+  if (features[BR1_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[1];
+    features[BR1_RANK] = piece_sq/8;
+    features[BR1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(ROOK,BLACK);
+    features[BR1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+  features[BR2_EXISTS] = (<ROOK>pos.count(BLACK) >= 2) ? 1 : 0;
+  if (features[BR2_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[2];
+    features[BR2_RANK] = piece_sq/8;
+    features[BR2_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(ROOK,BLACK);
+    features[BR2_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+
+  features[BB1_EXISTS] = (<BISHOP>pos.count(BLACK) >= 1) ? 1 : 0;
+  if (features[BB1_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[1];
+    features[BB1_RANK] = piece_sq/8;
+    features[BB1_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(BISHOP,BLACK);
+    features[BB1_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+  features[BB2_EXISTS] = (<BISHOP>pos.count(BLACK) >= 2) ? 1 : 0;
+  if (features[BB2_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[2];
+    features[BB2_RANK] = piece_sq/8;
+    features[BB2_FILE] = piece_sq%8;
+    Bitboard piece_attacks = pos.attacks_from(BISHOP,BLACK);
+    features[BB2_SQUARES] = popcount<Max15>(piece_attacks);
+  }
+
+
+  features[BK1_EXISTS] = (<KNIGHT>pos.count(BLACK) >= 1) ? 1 : 0;
+  if (features[BK1_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[1];
+    features[BK1_RANK] = piece_sq/8;
+    features[BK1_FILE] = piece_sq%8;
+  }
+
+  features[BK2_EXISTS] = (<KNIGHT>pos.count(BLACK) >= 2) ? 1 : 0;
+  if (features[BK2_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[2];
+    features[BK2_RANK] = piece_sq/8;
+    features[BK2_FILE] = piece_sq%8;
+  }
+
+
+  features[BP1_EXISTS] = (<PAWN>pos.count(BLACK) >= 1) ? 1 : 0;
+  if (features[BP1_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[1];
+    features[BP1_RANK] = piece_sq/8;
+    features[BP1_FILE] = piece_sq%8;
+  }
+
+  features[BP2_EXISTS] = (<PAWN>pos.count(BLACK) >= 2) ? 1 : 0;
+  if (features[BP2_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[2];
+    features[BP2_RANK] = piece_sq/8;
+    features[BP2_FILE] = piece_sq%8;
+  }
+
+  features[BP3_EXISTS] = (<PAWN>pos.count(BLACK) >= 3) ? 1 : 0;
+  if (features[BP3_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[3];
+    features[BP3_RANK] = piece_sq/8;
+    features[BP3_FILE] = piece_sq%8;
+  }
+
+  features[BP4_EXISTS] = (<PAWN>pos.count(BLACK) >= 4) ? 1 : 0;
+  if (features[BP4_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[4];
+    features[BP4_RANK] = piece_sq/8;
+    features[BP4_FILE] = piece_sq%8;
+  }
+
+  features[BP5_EXISTS] = (<PAWN>pos.count(BLACK) >= 5) ? 1 : 0;
+  if (features[BP5_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[5];
+    features[BP5_RANK] = piece_sq/8;
+    features[BP5_FILE] = piece_sq%8;
+  }
+
+  features[BP6_EXISTS] = (<PAWN>pos.count(BLACK) >= 6) ? 1 : 0;
+  if (features[BP6_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[6];
+    features[BP6_RANK] = piece_sq/8;
+    features[BP6_FILE] = piece_sq%8;
+  }
+
+  features[BP7_EXISTS] = (<PAWN>pos.count(BLACK) >= 7) ? 1 : 0;
+  if (features[BP7_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[7];
+    features[BP7_RANK] = piece_sq/8;
+    features[BP7_FILE] = piece_sq%8;
+  }
+
+  features[BP8_EXISTS] = (<PAWN>pos.count(BLACK) >= 8) ? 1 : 0;
+  if (features[BP8_EXISTS]) {
+    Square piece_sq = pos.squares(BLACK)[8];
+    features[BP8_RANK] = piece_sq/8;
+    features[BP8_FILE] = piece_sq%8;
+  }
+
+
+  //square-centric information
   //attack and defend maps
-
+  for (i = 0; i < 64; i++)
+  {
+    features[SQUARE_OFF+i] = ;
+  }
 
   //pawn information
 
