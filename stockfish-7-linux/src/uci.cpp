@@ -77,6 +77,7 @@ namespace {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
     }
+    sync_cout << pos << endl;
   }
 
 
@@ -160,7 +161,7 @@ void UCI::loop(int argc, char* argv[]) {
 
       token.clear(); // getline() could return empty or blank line
       is >> skipws >> token;
-      
+
       // The GUI sends 'ponderhit' to tell us to ponder on the same move the
       // opponent has played. In case Signals.stopOnPonderhit is set we are
       // waiting for 'ponderhit' to stop the search (for instance because we
@@ -197,8 +198,9 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "d")          sync_cout << pos << sync_endl;
       else if (token == "eval")       sync_cout << Eval::trace(pos) << sync_endl;
       else if (token == "raw_eval")   sync_cout << Eval::evaluate(pos) << sync_endl;
-      else if (token == "analyze_game_list") {Analyze::game_list(is); sync_cout << "Finished." << sync_endl;}
-      else if (token == "analyze_pos_list")  {Analyze::pos_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "analyze_game_list") {Analyze::evaluate_game_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "analyze_pos_list")  {Analyze::evaluate_pos_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "print_pos_rep") {Analyze::print_pos_rep(pos);}
       else if (token == "perft")
       {
           int depth;

@@ -39,4 +39,4 @@ for color in colors:
         print
     print
 
-#print ", ".join(nfeatures_list)
+print "\",\" ".join(nfeatures_list)

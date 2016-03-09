@@ -491,8 +491,8 @@ int Position::simple_min_attacker(Square s, Color attacking_side, Bitboard occup
   Bitboard rattacks = attacks_bb<ROOK  >(s, occupied);
   if (rattacks & pieces(attacking_side, ROOK)) return ROOK;
   if ( (rattacks | battacks) & pieces(attacking_side, QUEEN)) return QUEEN;
-  if ( attacks_from<KING>(s)  & pieces(KING)) return KING;
-  return -1;
+  if ( attacks_from<KING>(s)  & pieces(attacking_side, KING)) return KING;
+  return 0;
 }
 
 
