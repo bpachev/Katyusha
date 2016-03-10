@@ -79,13 +79,44 @@ string analyze_game(string& moves)
     return ss.str();
 }
 
-}//namespace
-
 
 void output_game(ostream& out, string& mov_str)
 {
  out << analyze_game(mov_str) << "\n";
 }
+
+void output_feature_pos(ofstream& out, Position& pos, int * featurevec)
+{
+  Analyze::Katyusha_pos_rep(pos, featurevec);
+  out << featurevec[0];
+  for (int i = 1; i < Analyze::NB_FEATURES; i++) out << "," << featurevec[i];
+  out << endl;
+}
+
+//we pass in a featurevec so that we don't have to reallocate memory over and over again
+void output_feature_game(ofstream& out, string mov_str, int * featurevec)
+{
+//  cout << mov_str << endl;
+  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+
+   istringstream is(mov_str);
+
+   string token;
+   Move m;
+   Position pos(StartFEN, false, Threads.main());
+   output_feature_pos(out, pos, featurevec);
+
+   // Parse move list
+   while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
+   {
+       SetupStates->push(StateInfo());
+       pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+       output_feature_pos(out, pos, featurevec);
+   }
+   out << endl;
+}
+
+}//namespace
 
 /*
  Reads in a file of games, and writes the static evaluation move-by-move to the given outputfile.
@@ -152,38 +183,6 @@ void Analyze::evaluate_pos_list(string infile, string ofile)
 
 }
 
-void output_feature_pos(ofstream& out, Position& pos, int * featurevec)
-{
-  Analyze::Katyusha_pos_rep(pos, featurevec);
-  out << featurevec[0];
-  for (int i = 1; i < Analyze::NB_FEATURES; i++) out << "," << featurevec[i];
-  out << endl;
-}
-
-//we pass in a featurevec so that we don't have to reallocate memory over and over again
-void output_feature_game(ofstream& out, string mov_str, int * featurevec)
-{
-  cout << mov_str << endl;
-  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
-
-   istringstream is(mov_str);
-
-   string token;
-   Move m;
-   Position pos(StartFEN, false, Threads.main());
-   output_feature_pos(out, pos, featurevec);
-
-   // Parse move list
-   while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
-   {
-       SetupStates->push(StateInfo());
-       pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
-       output_feature_pos(out, pos, featurevec);
-   }
-   out << endl;
-}
-
-
 /*
 
 */
@@ -195,22 +194,22 @@ void Analyze::evaluate_pos_list(istringstream& is)
   evaluate_pos_list(infile, ofile);
 }
 
+// print progress out every 10000 games
+#define GAME_CHECKPOINT 10000
+
 //Take a file of games and write the feauture representations to the outfile (in csv format)
 void Analyze::feature_game_list(string infile, string ofile)
 {
-  cout << "called fgl" << endl;
+  int games_processed = 0;
   int featurevec[NB_FEATURES];
   fstream f;
   f.open(infile);
-  cout << "opened infile" << endl;
   string line;
   ofstream out;
   out.open(ofile);
-  cout << "opened outfile" << endl;
   string mov_str;
   while (getline(f, line))
   {
-    cout << line << endl;
     if (line.length())
     {
       mov_str += line;
@@ -220,7 +219,9 @@ void Analyze::feature_game_list(string infile, string ofile)
     {
       output_feature_game(out, mov_str, featurevec);
       mov_str = "";
+      games_processed++;
     }
+    if (games_processed && games_processed % GAME_CHECKPOINT == 0) cout << "Processed " << games_processed << " games" << endl; 
   }
 
   if (mov_str.length())
@@ -237,11 +238,13 @@ void Analyze::feature_game_list(std::istringstream& is)
   string infile;
   string ofile;
   if ( !(is >> infile) || !(is >> ofile)) return;
-  evaluate_pos_list(infile, ofile);
+  feature_game_list(infile, ofile);
 }
 
 void Analyze::feature_pos_list(string infile, string ofile){}
 void Analyze::feature_pos_list(std::istringstream& is){}
+
+
 
 
 #define FEATURES_PER_LINE 5
