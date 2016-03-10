@@ -71,13 +71,14 @@ namespace {
     pos.set(fen, Options["UCI_Chess960"], Threads.main());
     SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
 
+//    sync_cout << is.str() << endl;
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
     {
         SetupStates->push(StateInfo());
         pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
     }
-    sync_cout << pos << endl;
+  //  sync_cout << pos << endl;
   }
 
 
@@ -200,6 +201,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "raw_eval")   sync_cout << Eval::evaluate(pos) << sync_endl;
       else if (token == "analyze_game_list") {Analyze::evaluate_game_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "analyze_pos_list")  {Analyze::evaluate_pos_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "games_feature_extract") {Analyze::feature_game_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "print_pos_rep") {Analyze::print_pos_rep(pos);}
       else if (token == "perft")
       {
