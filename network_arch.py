@@ -4,9 +4,10 @@ from keras.optimizers import SGD
 import numpy as np
 from sys import argv, exit
 
-if len(argv) < 3:
-  print "usage trainingdatafile outfile"
+if len(argv) < 2:
+  print "usage weightfile outfile"
   exit()
+
 
 model = Graph()
 
@@ -33,21 +34,7 @@ model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs=
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
 model.compile(optimizer = "sgd", loss = {"out":'mse'})
+model.load_weights(argv[1])
 
-data = np.load(argv[1])
-x,y = data['training_x'], data['training_y']
-
-
-training_dict = {}
-comp_order = ["global", "piece", "square", "pawn"]
-ind = 0
-for comp in comp_order:
-  inc = comps[comp]["input_neurons"]
-  training_dict["input_"+comp] = x[:,ind:ind+inc]
-  ind += inc
-
-SCORE_SCALE = 50.
-training_dict["out"] = y / SCORE_SCALE 
-model.fit(training_dict, validation_split = .25, verbose = 1, nb_epoch = 75)
-model.save_weights(argv[2])
-
+for node in model.nodes:
+  print node, model.nodes[node].get_weights()[1]
