@@ -8,25 +8,29 @@
 //SIDE TO MOVE, 4 CASTLE RIGHTS, 2*5 material counts
 #define GLOBAL_FEATURES 15
 //computed
-#define PIECE_FEATURES 164  
+#define PIECE_FEATURES 164
 //two board maps of 64 squares
 #define SQUARE_FEATURES 128
 //8 files, 2 colors, num of pawns of given color on given file
 #define PAWN_FEATURES 16
 #define TOTAL_FEATURES (GLOBAL_FEATURES + PIECE_FEATURES + SQUARE_FEATURES + PAWN_FEATURES)
 
+using namespace std;
+
 class KatyushaNet {
 public:
 //  KatyushaNet();
-  float evaluate(int * pos_features);  
-  void load_params(string fname);
-  
+  //load the weights of the model from an npz archive
+  void load(string archive_name);
+  float evaluate(int * pos_features);
+
   reluLayer layer1;
   reluLayer global;
   reluLayer piece;
   reluLayer square;
   reluLayer pawn;
+  tanhLayer out;
+  ~KatyushaNet();
 };
 
 #endif
-

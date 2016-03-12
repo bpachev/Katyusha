@@ -4,10 +4,10 @@ from keras.optimizers import SGD
 import numpy as np
 from sys import argv, exit
 
-if len(argv) < 2:
-  print "usage weightfile outfile"
-  exit()
-
+if __name__ == "__main__":
+ if len(argv) < 2:
+   print "usage outfile"
+   exit()
 
 model = Graph()
 
@@ -23,6 +23,8 @@ comps['pawn']['input_neurons'] = 16 #8 files, 2 colors
 
 layer1nodes = 50
 
+comp_order = ["global", "piece", "square", "pawn"]
+
 for comp in comps:
   input_name = "input_"+comp
   model.add_input(name = input_name, input_shape = (comps[comp]['input_neurons'],))
@@ -34,7 +36,5 @@ model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs=
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
 model.compile(optimizer = "sgd", loss = {"out":'mse'})
-model.load_weights(argv[1])
 
-for node in model.nodes:
-  print node, model.nodes[node].get_weights()[1]
+
