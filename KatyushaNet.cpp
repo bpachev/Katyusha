@@ -53,6 +53,12 @@ float KatyushaNet::evaluate(int * pos_features)
     out_off += initial_layers[i].layer->outputs;
     in_off += initial_layers[i].layer->inputs;
   }
+  float s = 0;
+  for (int j = 0; j < layer1.inputs; j++) s += first_layer_out[j];
+  cout << s << endl;
+
+  assert(in_off == TOTAL_FEATURES);
+  assert(out_off == layer1.inputs);
 
   return out.activate(layer1.activate(first_layer_out))[0];
 }

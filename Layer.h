@@ -32,7 +32,7 @@ public:
   void setBiases(float * biases);
   void setParams(float ** weights, float * biases);
   void weightsFromRotated(float * rotWeights);
-  float activation_func(float out);
+  virtual float activation_func(float out);
 
 private:
   // this is so that we don't have to malloc space to store the output array each time

@@ -1,4 +1,6 @@
 #include "Layer.h"
+#include <iostream>
+using namespace std;
 
 Layer::~Layer()
 {
@@ -12,6 +14,7 @@ Layer::~Layer()
 
 float Layer::activation_func(float out)
 {
+//  cout << "calling parent activation " << endl;
   return out;
 }
 
@@ -24,7 +27,7 @@ float * Layer::activate(float * input_arr)
   for (int i = 0; i < outputs; i++)
   {
     output_arr[i] = _biases[i];
-    int off = outputs*i;
+    int off = inputs*i;
     for (int j = 0; j < inputs; j++)
     {
       output_arr[i] += _weights[off+j]*input_arr[j];

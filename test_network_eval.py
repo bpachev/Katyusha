@@ -2,7 +2,7 @@ from network_arch import *
 import numpy as np
 
 model.load_weights("train_out_3_scaled2.hd5")
-x = np.zeros((2,sum([comps[comp]["input_neurons"] for comp in comps])))
+x = np.ones((2,sum([comps[comp]["input_neurons"] for comp in comps])))
 
 training_dict = {}
 ind = 0
