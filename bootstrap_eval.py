@@ -22,7 +22,7 @@ for comp in comp_order:
   ind += inc
 
 SCORE_SCALE = 50.
-training_dict["out"] = y / SCORE_SCALE 
+training_dict["out"] = y / SCORE_SCALE
 model.fit(training_dict, validation_split = .25, verbose = 1, nb_epoch = 75)
-model.save_weights(argv[2])
 
+model.save_weights(argv[2], overwrite=True)

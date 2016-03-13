@@ -17,11 +17,11 @@ comps['piece']['output_neurons'] = 32
 comps['square']['output_neurons'] = 64
 comps['pawn']['output_neurons'] = 20
 comps['global']['input_neurons'] = 15 #SIDE TO MOVE, 4 CASTLE RIGHTS, 2*5 material counts
-comps['piece']['input_neurons'] = 164 # 
+comps['piece']['input_neurons'] = 164 #
 comps['square']['input_neurons'] = 128 #two board maps of 64 squares
 comps['pawn']['input_neurons'] = 16 #8 files, 2 colors
 
-layer1nodes = 50
+layer1nodes = 100
 
 comp_order = ["global", "piece", "square", "pawn"]
 
@@ -36,5 +36,3 @@ model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs=
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
 model.compile(optimizer = "sgd", loss = {"out":'mse'})
-
-
