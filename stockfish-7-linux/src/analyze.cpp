@@ -18,20 +18,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-#include <sstream>
-#include <string>
-
-#include "evaluate.h"
-#include "movegen.h"
-#include "position.h"
-#include "search.h"
-#include "thread.h"
-#include "timeman.h"
-#include "uci.h"
-#include "bitcount.h"
-#include "material.h"
-#include "pawns.h"
 #include "analyze.h"
 
 using namespace std;
@@ -221,7 +207,7 @@ void Analyze::feature_game_list(string infile, string ofile)
       mov_str = "";
       games_processed++;
     }
-    if (games_processed && games_processed % GAME_CHECKPOINT == 0) cout << "Processed " << games_processed << " games" << endl; 
+    if (games_processed && games_processed % GAME_CHECKPOINT == 0) cout << "Processed " << games_processed << " games" << endl;
   }
 
   if (mov_str.length())
@@ -321,7 +307,7 @@ void Analyze::print_pos_rep(Position& pos)
 //utility function to convert Stockfish's internal feature representation into a feature vector I can use to train Katusha.
 // NOTE: this feature representation is based on that used by Giraffe, with some tweaks.
 //features is the array in which to store the result
-void Analyze::Katyusha_pos_rep(Position& pos, int * features)
+void Analyze::Katyusha_pos_rep(const Position& pos, int * features)
 {
   std::memset(features, 0, sizeof(int)*NB_FEATURES);
 

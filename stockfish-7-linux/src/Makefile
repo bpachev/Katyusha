@@ -37,7 +37,8 @@ PGOBENCH = ./$(EXE) bench 16 1 1000 default time
 ### Object files
 OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-	search.o thread.o timeman.o tt.o uci.o ucioption.o analyze.o syzygy/tbprobe.o
+	search.o thread.o timeman.o tt.o uci.o ucioption.o syzygy/tbprobe.o\
+	analyze.o KatyushaEngine.o KatyushaNet.o Layer.o reluLayer.o tanhLayer.o
 
 ### ==========================================================================
 ### Section 2. High-level Configuration
@@ -140,8 +141,9 @@ endif
 ### ==========================================================================
 
 ### 3.1 Selecting compiler (default = gcc)
+# got rid of -fno-rtti on Mar 12 2016, hope it doesn't break anything
 
-CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -fno-rtti -std=c++11 $(EXTRACXXFLAGS)
+CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++11
 LDFLAGS += $(EXTRALDFLAGS)
 
@@ -228,6 +230,8 @@ ifneq ($(comp),mingw)
 		# Haiku has pthreads in its libroot, so only link it in on other platforms
 		ifneq ($(UNAME),Haiku)
 			LDFLAGS += -lpthread
+			LDFLAGS += -lcnpy
+			LDFLAGS += -lm
 		endif
 	endif
 endif

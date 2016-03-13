@@ -478,8 +478,7 @@ Bitboard Position::check_blockers(Color c, Color kingColor) const {
 }
 
 
-int Position::simple_min_attacker(Square s, Color attacking_side, Bitboard occupied)
-{
+int Position::simple_min_attacker(Square s, Color attacking_side, Bitboard occupied) const {
   Color defending_side = ~attacking_side;
   if (attacks_from<PAWN>(s, defending_side)    & pieces(attacking_side, PAWN))
   {

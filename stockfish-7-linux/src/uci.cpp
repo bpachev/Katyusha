@@ -30,6 +30,8 @@
 #include "timeman.h"
 #include "uci.h"
 #include "analyze.h"
+#include "KatyushaEngine.h"
+
 using namespace std;
 
 extern void benchmark(const Position& pos, istream& is);
@@ -149,6 +151,8 @@ namespace {
 void UCI::loop(int argc, char* argv[]) {
 
   Position pos(StartFEN, false, Threads.main()); // The root position
+  //Initialize the weights of the neural network evaluator
+  KatyushaEngine::init();
   string token, cmd;
 
   for (int i = 1; i < argc; ++i)

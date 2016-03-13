@@ -24,6 +24,19 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <iostream>
+#include <sstream>
+
+#include "evaluate.h"
+#include "movegen.h"
+#include "position.h"
+#include "search.h"
+#include "thread.h"
+#include "timeman.h"
+#include "uci.h"
+#include "bitcount.h"
+#include "material.h"
+#include "pawns.h"
 
 using namespace std;
 
@@ -86,7 +99,7 @@ void feature_pos_list(string infile, string ofile);
 void feature_pos_list(std::istringstream& is);
 void print_pos_rep(Position& pos);
 
-void Katyusha_pos_rep(Position& pos, int * features);
+void Katyusha_pos_rep(const Position& pos, int * features);
 
 
 }

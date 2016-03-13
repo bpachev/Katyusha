@@ -1,6 +1,6 @@
 from keras.models import Sequential, Graph
 from keras.layers.core import Dense, Dropout, Activation
-from keras.optimizers import SGD
+from keras.optimizers import SGD,Adagrad
 import numpy as np
 from sys import argv, exit
 
@@ -21,7 +21,7 @@ comps['piece']['input_neurons'] = 164 #
 comps['square']['input_neurons'] = 128 #two board maps of 64 squares
 comps['pawn']['input_neurons'] = 16 #8 files, 2 colors
 
-layer1nodes = 100
+layer1nodes = 50
 
 comp_order = ["global", "piece", "square", "pawn"]
 
@@ -35,4 +35,4 @@ total_inputs = sum([comps[comp]["output_neurons"] for comp in comps])
 model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs= comp_order)
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
-model.compile(optimizer = "sgd", loss = {"out":'mse'})
+model.compile(optimizer = "adagrad", loss = {"out":'mse'})

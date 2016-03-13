@@ -6,7 +6,9 @@ bitboard.o: bitboard.cpp bitboard.h types.h bitcount.h misc.h
 endgame.o: endgame.cpp bitboard.h types.h bitcount.h endgame.h position.h \
  movegen.h
 evaluate.o: evaluate.cpp bitcount.h types.h evaluate.h material.h \
- endgame.h position.h bitboard.h misc.h pawns.h
+ endgame.h position.h bitboard.h misc.h pawns.h KatyushaEngine.h \
+ analyze.h movegen.h search.h thread.h movepick.h thread_win32.h \
+ timeman.h uci.h KatyushaNet.h reluLayer.h Layer.h tanhLayer.h
 main.o: main.cpp bitboard.h types.h evaluate.h position.h search.h misc.h \
  thread.h material.h endgame.h movepick.h movegen.h pawns.h \
  thread_win32.h tt.h uci.h syzygy/tbprobe.h syzygy/../search.h
@@ -38,14 +40,24 @@ timeman.o: timeman.cpp search.h misc.h types.h position.h bitboard.h \
 tt.o: tt.cpp bitboard.h types.h tt.h misc.h
 uci.o: uci.cpp evaluate.h types.h movegen.h position.h bitboard.h \
  search.h misc.h thread.h material.h endgame.h movepick.h pawns.h \
- thread_win32.h timeman.h uci.h analyze.h
+ thread_win32.h timeman.h uci.h analyze.h bitcount.h KatyushaEngine.h \
+ KatyushaNet.h reluLayer.h Layer.h tanhLayer.h
 ucioption.o: ucioption.cpp misc.h types.h search.h position.h bitboard.h \
  thread.h material.h endgame.h movepick.h movegen.h pawns.h \
  thread_win32.h tt.h uci.h syzygy/tbprobe.h syzygy/../search.h
-analyze.o: analyze.cpp evaluate.h types.h movegen.h position.h bitboard.h \
- search.h misc.h thread.h material.h endgame.h movepick.h pawns.h \
- thread_win32.h timeman.h uci.h analyze.h
 tbprobe.o: syzygy/tbprobe.cpp syzygy/../position.h syzygy/../bitboard.h \
  syzygy/../types.h syzygy/../movegen.h syzygy/../bitboard.h \
  syzygy/../search.h syzygy/../misc.h syzygy/../position.h \
  syzygy/../bitcount.h syzygy/tbprobe.h syzygy/tbcore.h syzygy/tbcore.cpp
+analyze.o: analyze.cpp analyze.h evaluate.h types.h movegen.h position.h \
+ bitboard.h search.h misc.h thread.h material.h endgame.h movepick.h \
+ pawns.h thread_win32.h timeman.h uci.h bitcount.h
+KatyushaEngine.o: KatyushaEngine.cpp KatyushaEngine.h analyze.h \
+ evaluate.h types.h movegen.h position.h bitboard.h search.h misc.h \
+ thread.h material.h endgame.h movepick.h pawns.h thread_win32.h \
+ timeman.h uci.h bitcount.h KatyushaNet.h reluLayer.h Layer.h tanhLayer.h
+KatyushaNet.o: KatyushaNet.cpp KatyushaNet.h reluLayer.h Layer.h \
+ tanhLayer.h
+Layer.o: Layer.cpp Layer.h
+reluLayer.o: reluLayer.cpp reluLayer.h Layer.h
+tanhLayer.o: tanhLayer.cpp tanhLayer.h Layer.h

@@ -28,6 +28,7 @@
 #include "evaluate.h"
 #include "material.h"
 #include "pawns.h"
+#include "KatyushaEngine.h"
 
 namespace {
 
@@ -164,7 +165,7 @@ namespace {
   // type is attacked by a pawn which is protected or not attacked.
   const Score ThreatBySafePawn[PIECE_TYPE_NB] = {
     S(0, 0), S(0, 0), S(176, 139), S(131, 127), S(217, 218), S(203, 215) };
-  
+
   // Threat[by minor/by rook][attacked PieceType] contains
   // bonuses according to which piece type attacks which one.
   // Attacks on lesser pieces which are pawn defended are not considered.
@@ -750,6 +751,7 @@ namespace {
 template<bool DoTrace>
 Value Eval::evaluate(const Position& pos) {
 
+
   assert(!pos.checkers());
 
   EvalInfo ei;
@@ -847,7 +849,7 @@ Value Eval::evaluate(const Position& pos) {
                       , evaluate_space<BLACK>(pos, ei) * Weights[Space]);
       Trace::add(TOTAL, score);
   }
-
+  v = KatyushaEngine::evaluate(pos);
   return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo; // Side to move point of view
 }
 
