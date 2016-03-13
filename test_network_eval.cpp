@@ -6,6 +6,7 @@ int main()
   KatyushaNet k;
   k.load(fname);
   int tvec[TOTAL_FEATURES];
-  for (int i = 0; i < TOTAL_FEATURES; i++) tvec[i] = 1;
+  for (int i = 0; i < TOTAL_FEATURES; i++) tvec[i] = 0;
+//  tvec[0] = 1;
   cout << k.evaluate(tvec) << endl;
 }

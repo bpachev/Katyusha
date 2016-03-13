@@ -32,6 +32,8 @@ public:
   void setBiases(float * biases);
   void setParams(float ** weights, float * biases);
   void weightsFromRotated(float * rotWeights);
+  void printRotatedWeights();
+
   virtual float activation_func(float out);
 
 private:

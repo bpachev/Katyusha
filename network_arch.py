@@ -32,7 +32,7 @@ for comp in comps:
 
 total_inputs = sum([comps[comp]["output_neurons"] for comp in comps])
 
-model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs= comps.keys())
+model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs= comp_order)
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
 model.compile(optimizer = "sgd", loss = {"out":'mse'})

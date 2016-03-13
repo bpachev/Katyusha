@@ -38,6 +38,22 @@ float * Layer::activate(float * input_arr)
   return output_arr;
 }
 
+void Layer::printRotatedWeights()
+{
+  cout << "[";
+  for (int j = 0; j < inputs; j++)
+  {
+    cout << "[" << endl;
+    for (int i = 0; i < outputs; i++)
+    {
+      cout << _weights[i*inputs + j] << " ,";
+    }
+    cout << "]" << endl;
+
+  }
+  cout << "]" << endl;
+}
+
 void Layer::init_unitialized(int layer_inputs, int layer_outputs)
 {
   outputs = layer_outputs;
