@@ -98,7 +98,10 @@ void feature_game_list(std::istringstream& is);
 void feature_pos_list(string infile, string ofile);
 void feature_pos_list(std::istringstream& is);
 void print_pos_rep(Position& pos);
-
+void process_game_list(string infile, string ofile);
+void process_pos_list(string infile, string ofile);
+void gen_training_set(string infile, string ofile, int npositions);
+void random_moves(Position& pos, int moves, int punishment_moves);
 void Katyusha_pos_rep(const Position& pos, int * features);
 
 

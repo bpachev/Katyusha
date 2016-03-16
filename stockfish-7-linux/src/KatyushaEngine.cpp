@@ -1,7 +1,7 @@
 #include "KatyushaEngine.h"
 
 KatyushaNet network;
-string weightsfile = "adagrad_weights2.npz";
+string weightsfile = "/home/benjamin/Katyusha/adagrad_weights2.npz";
 int pos_rep_arr[Analyze::NB_FEATURES];
 
 

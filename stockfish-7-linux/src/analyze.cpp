@@ -19,6 +19,8 @@
 */
 
 #include "analyze.h"
+#include "movegen.h"
+
 
 using namespace std;
 
@@ -66,7 +68,7 @@ string analyze_game(string& moves)
 }
 
 
-void output_game(ostream& out, string& mov_str)
+void output_game_evals(ostream& out, string& mov_str)
 {
  out << analyze_game(mov_str) << "\n";
 }
@@ -117,6 +119,8 @@ void Analyze::evaluate_game_list(istringstream& is)
 
 void Analyze::evaluate_game_list(string infile, string ofile)
 {
+  process_game_list(infile, ofile, output_game_evals);
+  return;
   fstream f;
   f.open(infile);
   string line;
@@ -133,14 +137,14 @@ void Analyze::evaluate_game_list(string infile, string ofile)
     }
     else
     {
-      output_game(out, mov_str);
+      output_game_evals(out, mov_str);
       mov_str = "";
     }
   }
 
   if (mov_str.length())
   {
-    output_game(out, mov_str);
+    output_game_evals(out, mov_str);
   }
 
   f.close();
@@ -148,7 +152,98 @@ void Analyze::evaluate_game_list(string infile, string ofile)
 
 }
 
+void Analyze::process_game_list(string infile, string outfile, void(*game_func)(ostream&, string&))
+{
+  fstream f;
+  f.open(infile);
+  string line;
+  ofstream out;
+  out.open(ofile);
 
+  string mov_str;
+  while (getline(f, line))
+  {
+    if (line.length())
+    {
+      mov_str += line;
+      mov_str += " "; //so there will be a space between moves
+    }
+    else
+    {
+      game_func(out, mov_str);
+      mov_str = "";
+    }
+  }
+
+  if (mov_str.length())
+  {
+    game_func(out, mov_str);
+  }
+
+  f.close();
+  out.close();
+
+}
+
+void Analyze::gen_training_set(string infile, string ofile, int npositions)
+{
+
+}
+
+//make moves random moves, followed by punishment_moves of good play
+void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
+{
+  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+  for (int i = 0; i < moves; i++)
+  {
+    size_t nmoves = MoveList<LEGAL>(pos).size();
+    int move_num = rand() % nmoves;
+    int j;
+    for (const auto& m : MoveList<LEGAL>(pos)))
+    {
+      if (j == move_num)
+      {
+        SetupStates->push(StateInfo());
+        pos.do_move(m, SetupStates->top(), pos.gives_check(m, checkInfo(pos));
+        break;
+      }
+      j++;
+    }
+  }
+
+// have Stockfish play against itself for punishment_moves moves, using 1-ply lookahead static evaluation
+// The idea is for bad captures to happen and be punished
+//  play_moves(pos, punishment_moves);
+}
+
+void Analyze::random_capture(Position& pos)
+{
+  size_t captures = MoveList<CAPTURES>(pos).size();
+  cap_num = rand()%captures;
+  for (const auto& m : MoveList<CAPTURES>(pos))
+  {
+    int j;
+    if (j == cap_num)
+    {
+      //the cool thing about this is that j will not be incremented, so the next move will be tested for legality
+      if (!pos.legal(m, pos.pinned(pos.side_to_move() ) ) ) continue;
+      SetupStates->push(StateInfo());
+      pos.do_move(m, SetupStates->top(), pos.gives_check(m, checkInfo(pos));
+      return;
+    }
+    j++;
+  }
+
+  //if we got here, there were no legal captures, or we chose an illegal capture after the first legal one
+  //in this case, just make a random move with random punishment
+  random_moves(pos, 1, rand() % 2);
+}
+
+
+void Analyze::process_pos_list()
+{
+
+}
 
 void Analyze::evaluate_pos_list(string infile, string ofile)
 {
