@@ -73,6 +73,13 @@ void output_game_evals(ostream& out, string& mov_str)
  out << analyze_game(mov_str) << "\n";
 }
 
+void save_pos_features(Position& pos, float * dest)
+{
+  int feauturevec[NB_FEATURES];
+  Analyze::Katyusha_pos_rep(pos, feauturevec);
+  for (int i = 0; i < Analyze::NB_FEATURES; i++) dest[i] = (float)feauturevec[i];
+}
+
 void output_feature_pos(ofstream& out, Position& pos, int * featurevec)
 {
   Analyze::Katyusha_pos_rep(pos, featurevec);
@@ -185,16 +192,20 @@ void Analyze::process_game_list(string infile, string ofile, void(*game_func)(os
 
 }
 
+#define MAX_RAND_MOVES 2
+#define MAX_PUNISHMENT_MOVES 2
+
+
 void Analyze::gen_training_set(string infile, string ofile, int npositions)
 {
   fstream f;
   f.open(infile);
   string line;
-  ofstream out;
-  out.open(ofile);
   string mov_str;
 
-  float * data = (float*)malloc(sizeof(float)*npositions*(NB_FEATURES+1));
+  float * training_features = (float*)malloc(sizeof(float)*npositions*(NB_FEATURES));
+  float * training_evals = (float*)malloc(sizeof(float) * npositions*);
+  int curPos = 0;
 
   while (getline(f, line))
   {
@@ -205,18 +216,46 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
     }
     else
     {
-//      game_func(out, mov_str);
+
+      Position pos(StartFEN, false, Threads.main());
+      Move m;
+      string tok;
+      vector<Move> moves;
+
+      istringstream is(move_str);
+      while ((is >> tok) && (m = UCI::to_move(pos, tok)) != MOVE_NONE)
+      {
+        moves.push_back(m);
+      }
+
+      int nmoves = moves.size();
+      int mnum = rand() % nmoves;
+      for (int k = 0; k < mnum; k++)
+      {
+        pos.do_move(m, StateInfo(), pos.gives_check(m, CheckInfo(pos)));
+      }
+
+      Position& origPos = pos;
+      random_capture(pos);
+      save_pos_features(pos, training_features+NB_FEATURES*curPos);
+      training_evals[curPos] = (float)centipawn_evaluate(pos);
+      if (++curPos >= npositions) break;
+
+      random_moves(origPos, rand()%MAX_RAND_MOVES, rand()%MAX_PUNISHMENT_MOVES);
+      save_pos_features(pos, training_features+NB_FEATURES*curPos);
+      training_evals[curPos] = (float)centipawn_evaluate(pos);
+      if (++curPos >= npositions) break;
+
       mov_str = "";
     }
   }
-
-  if (mov_str.length())
-  {
-//    game_func(out, mov_str);
-  }
-
   f.close();
-  out.close();
+
+  //now write to outfile
+  const unsigned int feature_shape[] = {curPos, NB_FEATURES};
+  int feature_dims = 2;
+  const unsigned int evals_shape[] = {curPos};
+  int evals_dims = 1;
 
 }
 
