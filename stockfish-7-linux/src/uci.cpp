@@ -209,15 +209,15 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "analyze_game_list") {Analyze::evaluate_game_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "analyze_pos_list")  {Analyze::evaluate_pos_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "games_feature_extract") {Analyze::feature_game_list(is); sync_cout << "Finished." << sync_endl;}
-      else if (token == "") {
+      else if (token == "gen_training_set") {
         string infile, ofile;
         int max_positions;
-        if (!(is >>infile) || (!is>>ofile)) {
+        if (!(is >>infile) || !(is>>ofile)) {
           sync_cout << "Mising infile or outfile" << sync_endl;
           continue;
         }
-        if ((!is >> max_positions)) max_positions = MAX_TRAINING_POSITIONS;
-
+        if (!(is >> max_positions)) max_positions = MAX_TRAINING_POSITIONS;
+        sync_cout << "Max Positions " << max_positions << endl;
         Analyze::gen_training_set(infile, ofile, max_positions);
         sync_cout << "Finished." << sync_endl;
       }

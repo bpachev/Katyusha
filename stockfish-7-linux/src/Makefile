@@ -64,7 +64,7 @@ OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 
 ### 2.1. General and architecture defaults
 optimize = yes
-debug = no
+debug = yes
 bits = 32
 prefetch = no
 bsfq = no
@@ -142,8 +142,9 @@ endif
 
 ### 3.1 Selecting compiler (default = gcc)
 # got rid of -fno-rtti on Mar 12 2016, hope it doesn't break anything
+#got rid of -fno-exceptions on Mar 17 2016
 
-CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++11 $(EXTRACXXFLAGS)
+CXXFLAGS += -Wall -Wcast-qual -std=c++11 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++11
 LDFLAGS += $(EXTRALDFLAGS)
 
@@ -230,6 +231,7 @@ ifneq ($(comp),mingw)
 		# Haiku has pthreads in its libroot, so only link it in on other platforms
 		ifneq ($(UNAME),Haiku)
 			LDFLAGS += -lpthread
+			LDFLAGS += -lz
 			LDFLAGS += -lcnpy
 			LDFLAGS += -lm
 		endif
@@ -524,4 +526,3 @@ icc-profile-clean:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
 -include .depend
-

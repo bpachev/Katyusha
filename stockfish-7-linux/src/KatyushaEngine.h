@@ -9,6 +9,9 @@ namespace KatyushaEngine {
    void init();
    Value evaluate(const Position& pos);
    Value to_stockfish_value(float raw_eval);
+   bool engine_active();
+   void activate();
+   void deactivate();
 }
 
 #endif

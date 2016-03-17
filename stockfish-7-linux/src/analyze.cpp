@@ -20,7 +20,8 @@
 
 #include "analyze.h"
 #include "movegen.h"
-
+#include "cnpy.h"
+#include "time.h"
 
 using namespace std;
 
@@ -75,9 +76,9 @@ void output_game_evals(ostream& out, string& mov_str)
 
 void save_pos_features(Position& pos, float * dest)
 {
-  int feauturevec[NB_FEATURES];
-  Analyze::Katyusha_pos_rep(pos, feauturevec);
-  for (int i = 0; i < Analyze::NB_FEATURES; i++) dest[i] = (float)feauturevec[i];
+  int featurevec[Analyze::NB_FEATURES];
+  Analyze::Katyusha_pos_rep(pos, featurevec);
+  for (int i = 0; i < Analyze::NB_FEATURES; i++) dest[i] = (float)featurevec[i];
 }
 
 void output_feature_pos(ofstream& out, Position& pos, int * featurevec)
@@ -198,13 +199,17 @@ void Analyze::process_game_list(string infile, string ofile, void(*game_func)(os
 
 void Analyze::gen_training_set(string infile, string ofile, int npositions)
 {
+  cout << "infile " << infile << " ofile " << ofile << "npos " << npositions << endl;
   fstream f;
   f.open(infile);
   string line;
   string mov_str;
 
+  srand(time(NULL));
+
   float * training_features = (float*)malloc(sizeof(float)*npositions*(NB_FEATURES));
-  float * training_evals = (float*)malloc(sizeof(float) * npositions*);
+  float * training_evals = (float*)malloc(sizeof(float) * npositions);
+  if (!training_features || !training_evals) cout << "Memory alloc error. " << endl;
   int curPos = 0;
 
   while (getline(f, line))
@@ -216,24 +221,35 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
     }
     else
     {
-
+      if (curPos%10000 == 0) cout << "Processing Position " << curPos << endl;
       Position pos(StartFEN, false, Threads.main());
       Move m;
-      string tok;
-      vector<Move> moves;
+      string token;
+      vector<string> move_strs;
 
-      istringstream is(move_str);
-      while ((is >> tok) && (m = UCI::to_move(pos, tok)) != MOVE_NONE)
+      istringstream is(mov_str);
+      while (is >> token)
       {
-        moves.push_back(m);
+        move_strs.push_back(token);
       }
 
-      int nmoves = moves.size();
+      int nmoves = move_strs.size();
+      if (!nmoves) continue;
       int mnum = rand() % nmoves;
+
+      SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
       for (int k = 0; k < mnum; k++)
       {
-        pos.do_move(m, StateInfo(), pos.gives_check(m, CheckInfo(pos)));
+        SetupStates->push(StateInfo());
+        if ((m = UCI::to_move(pos, move_strs[k])) != MOVE_NONE)
+        {
+          pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+        }
+        // if we encountered an invalid move, break out
+        else break;
       }
+
+//      cout << "moved to move num " << mnum << "total moves " << move_strs.size() << endl;
 
       Position& origPos = pos;
       random_capture(pos);
@@ -242,8 +258,8 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
       if (++curPos >= npositions) break;
 
       random_moves(origPos, rand()%MAX_RAND_MOVES, rand()%MAX_PUNISHMENT_MOVES);
-      save_pos_features(pos, training_features+NB_FEATURES*curPos);
-      training_evals[curPos] = (float)centipawn_evaluate(pos);
+      save_pos_features(origPos, training_features+NB_FEATURES*curPos);
+      training_evals[curPos] = (float)centipawn_evaluate(origPos);
       if (++curPos >= npositions) break;
 
       mov_str = "";
@@ -251,12 +267,18 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
   }
   f.close();
 
+  cout << "Writing to outfile" << endl;
+
   //now write to outfile
-  const unsigned int feature_shape[] = {curPos, NB_FEATURES};
+  const unsigned int feature_shape[] = {(unsigned int)curPos, (unsigned int)NB_FEATURES};
   int feature_dims = 2;
-  const unsigned int evals_shape[] = {curPos};
+  const unsigned int evals_shape[] = {(unsigned int)curPos};
   int evals_dims = 1;
 
+  cnpy::npz_save(ofile, "training_x", training_features, feature_shape, feature_dims, "a");
+  cout << "got training x " << endl;
+  cnpy::npz_save(ofile, "training_y", training_evals, evals_shape, evals_dims, "a");
+  cout << "got training y" << endl;
 }
 
 //make moves random moves, followed by punishment_moves of good play
@@ -266,6 +288,7 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
   for (int i = 0; i < moves; i++)
   {
     size_t nmoves = MoveList<LEGAL>(pos).size();
+    if (!nmoves) return; //UH-OH, there are no legal moves
     int move_num = rand() % nmoves;
     int j = 0;
     for (const auto& m : MoveList<LEGAL>(pos))
@@ -288,8 +311,12 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 void Analyze::random_capture(Position& pos)
 {
   size_t captures = MoveList<CAPTURES>(pos).size();
+  if (captures == 0) goto end_random_capture;
+
+  {
   int cap_num = rand()%captures;
   int j = 0;
+  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
   for (const auto& m : MoveList<CAPTURES>(pos))
   {
     if (j == cap_num)
@@ -302,17 +329,18 @@ void Analyze::random_capture(Position& pos)
     }
     j++;
   }
-
+  }
   //if we got here, there were no legal captures, or we chose an illegal capture after the first legal one
   //in this case, just make a random move with random punishment
+end_random_capture:
   random_moves(pos, 1, rand() % 2);
 }
 
 
-void Analyze::process_pos_list(string infile, string ofile)
+/*void Analyze::process_pos_list(string infile, string ofile)
 {
 
-}
+}*/
 
 void Analyze::evaluate_pos_list(string infile, string ofile)
 {
@@ -391,8 +419,8 @@ void Analyze::feature_game_list(std::istringstream& is)
   feature_game_list(infile, ofile);
 }
 
-void Analyze::feature_pos_list(string infile, string ofile){}
-void Analyze::feature_pos_list(std::istringstream& is){}
+//void Analyze::feature_pos_list(string infile, string ofile){}
+//void Analyze::feature_pos_list(std::istringstream& is){}
 
 
 
