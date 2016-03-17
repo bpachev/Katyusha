@@ -148,6 +148,9 @@ namespace {
 /// run 'bench', once the command is executed the function returns immediately.
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
+/// To facilitate my AI extensions to Stockfish, commands for processing chess data are also supported
+/// These are primarily to facilitate the development of my deep learning chess AI -- Katyusha
+
 void UCI::loop(int argc, char* argv[]) {
 
   Position pos(StartFEN, false, Threads.main()); // The root position
@@ -206,7 +209,26 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "analyze_game_list") {Analyze::evaluate_game_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "analyze_pos_list")  {Analyze::evaluate_pos_list(is); sync_cout << "Finished." << sync_endl;}
       else if (token == "games_feature_extract") {Analyze::feature_game_list(is); sync_cout << "Finished." << sync_endl;}
+      else if (token == "") {
+        string infile, ofile;
+        int max_positions;
+        if (!(is >>infile) || (!is>>ofile)) {
+          sync_cout << "Mising infile or outfile" << sync_endl;
+          continue;
+        }
+        if ((!is >> max_positions)) max_positions = MAX_TRAINING_POSITIONS;
+
+        Analyze::gen_training_set(infile, ofile, max_positions);
+        sync_cout << "Finished." << sync_endl;
+      }
       else if (token == "print_pos_rep") {Analyze::print_pos_rep(pos);}
+      else if (token == "random_moves") {
+        int nmoves;
+        if (!(is >> nmoves)) nmoves = 1;
+        Analyze::random_moves(pos, nmoves);
+        sync_cout << pos << sync_endl;
+      }
+      else if (token == "random_capture") {Analyze::random_capture(pos); sync_cout << pos << sync_endl;}
       else if (token == "perft")
       {
           int depth;

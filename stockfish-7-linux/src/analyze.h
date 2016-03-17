@@ -40,6 +40,9 @@
 
 using namespace std;
 
+// the default maximum number of training positions
+#define MAX_TRAINING_POSITIONS 10
+
 namespace Analyze {
   //The features are as follows
   // Side to move:
@@ -98,12 +101,12 @@ void feature_game_list(std::istringstream& is);
 void feature_pos_list(string infile, string ofile);
 void feature_pos_list(std::istringstream& is);
 void print_pos_rep(Position& pos);
-void process_game_list(string infile, string ofile);
+void process_game_list(string infile, string outfile, void(*game_func)(ostream&, string&));
 void process_pos_list(string infile, string ofile);
 void gen_training_set(string infile, string ofile, int npositions);
-void random_moves(Position& pos, int moves, int punishment_moves);
+void random_moves(Position& pos, int moves, int punishment_moves=0);
 void Katyusha_pos_rep(const Position& pos, int * features);
-
+void random_capture(Position& pos);
 
 }
 

@@ -152,7 +152,7 @@ void Analyze::evaluate_game_list(string infile, string ofile)
 
 }
 
-void Analyze::process_game_list(string infile, string outfile, void(*game_func)(ostream&, string&))
+void Analyze::process_game_list(string infile, string ofile, void(*game_func)(ostream&, string&))
 {
   fstream f;
   f.open(infile);
@@ -187,6 +187,36 @@ void Analyze::process_game_list(string infile, string outfile, void(*game_func)(
 
 void Analyze::gen_training_set(string infile, string ofile, int npositions)
 {
+  fstream f;
+  f.open(infile);
+  string line;
+  ofstream out;
+  out.open(ofile);
+  string mov_str;
+
+  float * data = (float*)malloc(sizeof(float)*npositions*(NB_FEATURES+1));
+
+  while (getline(f, line))
+  {
+    if (line.length())
+    {
+      mov_str += line;
+      mov_str += " "; //so there will be a space between moves
+    }
+    else
+    {
+//      game_func(out, mov_str);
+      mov_str = "";
+    }
+  }
+
+  if (mov_str.length())
+  {
+//    game_func(out, mov_str);
+  }
+
+  f.close();
+  out.close();
 
 }
 
@@ -198,13 +228,13 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
   {
     size_t nmoves = MoveList<LEGAL>(pos).size();
     int move_num = rand() % nmoves;
-    int j;
-    for (const auto& m : MoveList<LEGAL>(pos)))
+    int j = 0;
+    for (const auto& m : MoveList<LEGAL>(pos))
     {
       if (j == move_num)
       {
         SetupStates->push(StateInfo());
-        pos.do_move(m, SetupStates->top(), pos.gives_check(m, checkInfo(pos));
+        pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
         break;
       }
       j++;
@@ -219,16 +249,16 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 void Analyze::random_capture(Position& pos)
 {
   size_t captures = MoveList<CAPTURES>(pos).size();
-  cap_num = rand()%captures;
+  int cap_num = rand()%captures;
+  int j = 0;
   for (const auto& m : MoveList<CAPTURES>(pos))
   {
-    int j;
     if (j == cap_num)
     {
       //the cool thing about this is that j will not be incremented, so the next move will be tested for legality
-      if (!pos.legal(m, pos.pinned(pos.side_to_move() ) ) ) continue;
+      if (!pos.legal(m, pos.pinned_pieces(pos.side_to_move() ) ) ) continue;
       SetupStates->push(StateInfo());
-      pos.do_move(m, SetupStates->top(), pos.gives_check(m, checkInfo(pos));
+      pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
       return;
     }
     j++;
@@ -240,7 +270,7 @@ void Analyze::random_capture(Position& pos)
 }
 
 
-void Analyze::process_pos_list()
+void Analyze::process_pos_list(string infile, string ofile)
 {
 
 }
