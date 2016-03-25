@@ -107,6 +107,7 @@ void gen_training_set(string infile, string ofile, int npositions);
 void random_moves(Position& pos, int moves, int punishment_moves=0);
 void Katyusha_pos_rep(const Position& pos, int * features);
 void random_capture(Position& pos);
+void play_moves(Position& pos, int moves);
 
 }
 

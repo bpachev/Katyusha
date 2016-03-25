@@ -22,6 +22,7 @@
 #include "movegen.h"
 #include "cnpy.h"
 #include "time.h"
+#include "KatyushaEngine.h"
 
 using namespace std;
 
@@ -205,6 +206,9 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
   string line;
   string mov_str;
 
+  //enable Stockfish
+  KatyushaEngine::deactivate();
+
   srand(time(NULL));
 
   float * training_features = (float*)malloc(sizeof(float)*npositions*(NB_FEATURES));
@@ -237,12 +241,13 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
       if (!nmoves) continue;
       int mnum = rand() % nmoves;
 
+//      cout << analyze_game(mov_str) << endl;
       SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
       for (int k = 0; k < mnum; k++)
       {
-        SetupStates->push(StateInfo());
         if ((m = UCI::to_move(pos, move_strs[k])) != MOVE_NONE)
         {
+          SetupStates->push(StateInfo());
           pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
         }
         // if we encountered an invalid move, break out
@@ -251,16 +256,24 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
 
 //      cout << "moved to move num " << mnum << "total moves " << move_strs.size() << endl;
 
-      Position& origPos = pos;
+//      Position& origPos = pos;
+//      cout << pos << "opchecks " << pos.checkers() << endl;
+      if (rand()%2) {
       random_capture(pos);
       save_pos_features(pos, training_features+NB_FEATURES*curPos);
       training_evals[curPos] = (float)centipawn_evaluate(pos);
+  //    cout << "First Evaluation " << pos << "pchecks "<< pos.checkers() << endl;
+    //  if (pos.checkers()) cout << "UhOHp"<<endl;
+//      cout << "Orig Pos" << origPos << endl;
+      }
+      else {
+        random_moves(pos, rand()%MAX_RAND_MOVES, rand()%MAX_PUNISHMENT_MOVES);
+          save_pos_features(pos, training_features+NB_FEATURES*curPos);
+          training_evals[curPos] = (float)centipawn_evaluate(pos);
+      }
       if (++curPos >= npositions) break;
 
-      random_moves(origPos, rand()%MAX_RAND_MOVES, rand()%MAX_PUNISHMENT_MOVES);
-      save_pos_features(origPos, training_features+NB_FEATURES*curPos);
-      training_evals[curPos] = (float)centipawn_evaluate(origPos);
-      if (++curPos >= npositions) break;
+
 
       mov_str = "";
     }
@@ -275,6 +288,7 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
   const unsigned int evals_shape[] = {(unsigned int)curPos};
   int evals_dims = 1;
 
+  cout << "total " << curPos << "positions out of requested " << npositions << endl;
   cnpy::npz_save(ofile, "training_x", training_features, feature_shape, feature_dims, "a");
   cout << "got training x " << endl;
   cnpy::npz_save(ofile, "training_y", training_evals, evals_shape, evals_dims, "a");
@@ -305,7 +319,37 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 
 // have Stockfish play against itself for punishment_moves moves, using 1-ply lookahead static evaluation
 // The idea is for bad captures to happen and be punished
-//  play_moves(pos, punishment_moves);
+  play_moves(pos, punishment_moves);
+}
+
+void naive_lookahead(Position& pos)
+{
+  Value v = VALUE_DRAW;
+  Move bestm = MOVE_NONE;
+  Value bestVal = VALUE_DRAW;
+//  StateInfo st;
+  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+  for (auto const& m : MoveList<LEGAL>(pos))
+  {
+    SetupStates->push(StateInfo());
+    pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+    v = Eval::evaluate<true>(pos);
+    if (v > bestVal) {
+      bestVal = v;
+      bestm = m;
+    }
+    pos.undo_move(m);
+  }
+  SetupStates->push(StateInfo());
+  pos.do_move(bestm, SetupStates->top(), pos.gives_check(bestm, CheckInfo(pos)));
+}
+
+void Analyze::play_moves(Position& pos, int moves)
+{
+  for (int i = 0; i < moves; i++)
+  {
+    naive_lookahead(pos);
+  }
 }
 
 void Analyze::random_capture(Position& pos)
