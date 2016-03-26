@@ -64,7 +64,7 @@ OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 
 ### 2.1. General and architecture defaults
 optimize = yes
-debug = yes
+debug = no
 bits = 32
 prefetch = no
 bsfq = no
@@ -142,7 +142,7 @@ endif
 
 ### 3.1 Selecting compiler (default = gcc)
 # got rid of -fno-rtti on Mar 12 2016, hope it doesn't break anything
-#got rid of -fno-exceptions on Mar 17 2016
+#got rid of  on Mar 17 2016
 
 CXXFLAGS += -Wall -Wcast-qual -std=c++11 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++11

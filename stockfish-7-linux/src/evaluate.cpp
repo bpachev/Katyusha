@@ -581,7 +581,7 @@ namespace {
     {
         Square s = pop_lsb(&b);
 
-//        assert(pos.pawn_passed(Us, s));
+        assert(pos.pawn_passed(Us, s));
 
         int r = relative_rank(Us, s) - RANK_2;
         int rr = r * (r - 1);
@@ -752,7 +752,7 @@ template<bool DoTrace>
 Value Eval::evaluate(const Position& pos) {
 
 //  cout << "pos checkers " << pos.checkers() << endl;
-//  assert(!pos.checkers());
+  assert(!pos.checkers());
 
   EvalInfo ei;
   Score score, mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
