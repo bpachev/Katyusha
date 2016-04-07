@@ -194,8 +194,8 @@ void Analyze::process_game_list(string infile, string ofile, void(*game_func)(os
 
 }
 
-#define MAX_RAND_MOVES 2
-#define MAX_PUNISHMENT_MOVES 2
+#define MAX_RAND_MOVES 3
+#define MAX_PUNISHMENT_MOVES 3
 
 
 void Analyze::gen_training_set(string infile, string ofile, int npositions)
@@ -298,7 +298,9 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
 //make moves random moves, followed by punishment_moves of good play
 void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 {
-  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+//  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+  cout << "doing random " << moves << " punishment " << punishment_moves << endl;
+  StateInfo st[moves+punishment_moves];
   for (int i = 0; i < moves; i++)
   {
     size_t nmoves = MoveList<LEGAL>(pos).size();
@@ -309,8 +311,9 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
     {
       if (j == move_num)
       {
-        SetupStates->push(StateInfo());
-        pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+  //      SetupStates->push(StateInfo());
+//        pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+        pos.do_move(m, st[i], pos.gives_check(m, CheckInfo(pos)));
         break;
       }
       j++;
@@ -319,7 +322,31 @@ void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 
 // have Stockfish play against itself for punishment_moves moves, using 1-ply lookahead static evaluation
 // The idea is for bad captures to happen and be punished
-  play_moves(pos, punishment_moves);
+
+ for (int i = 0; i < punishment_moves; i++)
+ {
+    Value v = VALUE_DRAW;
+    Move bestm = MOVE_NONE;
+    Value bestVal = VALUE_MATED_IN_MAX_PLY;
+    //  StateInfo st;
+    //  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+    //StateInfo st[1];
+    for (auto const& m : MoveList<LEGAL>(pos))
+    {
+    //  SetupStates->push(StateInfo());
+      pos.do_move(m, st[moves+i], pos.gives_check(m, CheckInfo(pos)));
+      v = Eval::evaluate<true>(pos);
+      if (v > bestVal) {
+        bestVal = v;
+        bestm = m;
+      }
+      pos.undo_move(m);
+    }
+    //  SetupStates->push(StateInfo());
+    if (bestm != MOVE_NONE) pos.do_move(bestm, st[moves+i], pos.gives_check(bestm, CheckInfo(pos)));
+  }
+
+//  play_moves(pos, punishment_moves);
 }
 
 void naive_lookahead(Position& pos)
@@ -328,11 +355,12 @@ void naive_lookahead(Position& pos)
   Move bestm = MOVE_NONE;
   Value bestVal = VALUE_DRAW;
 //  StateInfo st;
-  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+//  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+  StateInfo st[1];
   for (auto const& m : MoveList<LEGAL>(pos))
   {
-    SetupStates->push(StateInfo());
-    pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+  //  SetupStates->push(StateInfo());
+    pos.do_move(m, st[0], pos.gives_check(m, CheckInfo(pos)));
     v = Eval::evaluate<true>(pos);
     if (v > bestVal) {
       bestVal = v;
@@ -340,12 +368,13 @@ void naive_lookahead(Position& pos)
     }
     pos.undo_move(m);
   }
-  SetupStates->push(StateInfo());
-  pos.do_move(bestm, SetupStates->top(), pos.gives_check(bestm, CheckInfo(pos)));
+//  SetupStates->push(StateInfo());
+  pos.do_move(bestm, st[0], pos.gives_check(bestm, CheckInfo(pos)));
 }
 
 void Analyze::play_moves(Position& pos, int moves)
 {
+//  cout << "playing " << moves << " moves" << endl;
   for (int i = 0; i < moves; i++)
   {
     naive_lookahead(pos);
@@ -354,21 +383,29 @@ void Analyze::play_moves(Position& pos, int moves)
 
 void Analyze::random_capture(Position& pos)
 {
+//  cout << " doing random capture " << endl;
+  if (pos.checkers())
+  {
+    random_moves(pos, 1,0);
+    return;
+  }
+
   size_t captures = MoveList<CAPTURES>(pos).size();
   if (captures == 0) goto end_random_capture;
 
   {
   int cap_num = rand()%captures;
   int j = 0;
-  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+//  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+  StateInfo st[1];
   for (const auto& m : MoveList<CAPTURES>(pos))
   {
     if (j == cap_num)
     {
       //the cool thing about this is that j will not be incremented, so the next move will be tested for legality
       if (!pos.legal(m, pos.pinned_pieces(pos.side_to_move() ) ) ) continue;
-      SetupStates->push(StateInfo());
-      pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+//      SetupStates->push(StateInfo());
+      pos.do_move(m, st[0], pos.gives_check(m, CheckInfo(pos)));
       return;
     }
     j++;
