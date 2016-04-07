@@ -145,7 +145,7 @@ template<>
 Value Endgame<KXK>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
-  assert(!pos.checkers()); // Eval is never called when in check
+//  assert(!pos.checkers()); // Eval is never called when in check
 
   // Stalemate detection with lone king
   if (pos.side_to_move() == weakSide && !MoveList<LEGAL>(pos).size())

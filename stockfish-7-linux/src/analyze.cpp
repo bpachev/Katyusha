@@ -299,7 +299,7 @@ void Analyze::gen_training_set(string infile, string ofile, int npositions)
 void Analyze::random_moves(Position& pos, int moves, int punishment_moves)
 {
 //  SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
-  cout << "doing random " << moves << " punishment " << punishment_moves << endl;
+  //cout << "doing random " << moves << " punishment " << punishment_moves << endl;
   StateInfo st[moves+punishment_moves];
   for (int i = 0; i < moves; i++)
   {
