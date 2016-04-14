@@ -35,6 +35,8 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "analyze.h"
+
 
 namespace Search {
 
@@ -346,6 +348,27 @@ void MainThread::search() {
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
+  if (Options["Katyusha Learning"])
+  {
+    StateInfo mystates[MAX_PLY], *mystate = mystates;
+    int features[Analyze::NB_FEATURES];
+    for (Move m : bestThread->rootMoves[0].pv)
+    {
+      rootPos.do_move(m, *mystate++, rootPos.gives_check(m, CheckInfo(rootPos)));
+    }
+
+    Analyze::Katyusha_pos_rep(rootPos, features);
+    for (size_t i = 0; i < Analyze::NB_FEATURES; i++)
+    {
+      std::cout << features[i];
+      if (i) std::cout << ",";
+    }
+
+    for (size_t i = bestThread->rootMoves[0].pv.size(); i > 0 ;)
+    {
+      rootPos.undo_move(bestThread->rootMoves[0].pv[--i]);
+    }
+  }
   std::cout << sync_endl;
 }
 

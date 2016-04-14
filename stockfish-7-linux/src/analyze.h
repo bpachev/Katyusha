@@ -18,6 +18,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+//Author: Benjamin Pachev 2016
+
 #ifndef ANALYZE_H_INCLUDED
 #define ANALYZE_H_INCLUDED
 
@@ -108,6 +110,7 @@ void random_moves(Position& pos, int moves, int punishment_moves=0);
 void Katyusha_pos_rep(const Position& pos, int * features);
 void random_capture(Position& pos);
 void play_moves(Position& pos, int moves);
+void gen_training_positions(string infile, string ofile, int npositions);
 
 }
 

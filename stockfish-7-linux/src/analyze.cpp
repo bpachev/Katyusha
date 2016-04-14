@@ -194,9 +194,83 @@ void Analyze::process_game_list(string infile, string ofile, void(*game_func)(os
 
 }
 
+
 #define MAX_RAND_MOVES 3
 #define MAX_PUNISHMENT_MOVES 3
 
+
+void Analyze::gen_training_positions(string infile, string ofile, int npositions)
+{
+  cout << "infile " << infile << " ofile " << ofile << "npos " << npositions << endl;
+  fstream f;
+  ofstream out;
+  f.open(infile);
+  out.open(ofile);
+  string line;
+  string mov_str;
+
+  //enable Stockfish
+  KatyushaEngine::deactivate();
+
+  srand(time(NULL));
+
+  int curPos = 0;
+
+  while (getline(f, line))
+  {
+    if (line.length())
+    {
+      mov_str += line;
+      mov_str += " "; //so there will be a space between moves
+    }
+    else
+    {
+      if (curPos%10000 == 0) cout << "Processing Position " << curPos << endl;
+      Position pos(StartFEN, false, Threads.main());
+      Move m;
+      string token;
+      vector<string> move_strs;
+
+      istringstream is(mov_str);
+      while (is >> token)
+      {
+        move_strs.push_back(token);
+      }
+
+      int nmoves = move_strs.size();
+      if (!nmoves) continue;
+      int mnum = rand() % nmoves;
+
+//      cout << analyze_game(mov_str) << endl;
+      SetupStates = Search::StateStackPtr(new std::stack<StateInfo>);
+      for (int k = 0; k < mnum; k++)
+      {
+        if ((m = UCI::to_move(pos, move_strs[k])) != MOVE_NONE)
+        {
+          SetupStates->push(StateInfo());
+          pos.do_move(m, SetupStates->top(), pos.gives_check(m, CheckInfo(pos)));
+        }
+        // if we encountered an invalid move, break out
+        else break;
+      }
+
+      if (rand()%2) {
+        random_capture(pos);
+        out << pos.fen() << endl;
+      }
+      else {
+        random_moves(pos, rand()%MAX_RAND_MOVES, rand()%MAX_PUNISHMENT_MOVES);
+        out << pos.fen() << endl;
+      }
+      if (++curPos >= npositions) break;
+
+      mov_str = "";
+    }
+  }
+  f.close();
+  out.close();
+  cout << "Processed total " << curPos << " positions." << endl;
+}
 
 void Analyze::gen_training_set(string infile, string ofile, int npositions)
 {

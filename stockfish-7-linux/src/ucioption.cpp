@@ -74,6 +74,8 @@ void init(OptionsMap& o) {
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(6, 0, 6);
+  // dump katyusha's position representations so the external learning script can update the neural net model appropriately
+  o["Katyusha Learning"] << Option(false);
 }
 
 

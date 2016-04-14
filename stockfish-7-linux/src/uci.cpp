@@ -221,6 +221,17 @@ void UCI::loop(int argc, char* argv[]) {
         Analyze::gen_training_set(infile, ofile, max_positions);
         sync_cout << "Finished." << sync_endl;
       }
+      else if (token == "gen_training_positions")
+      {
+        string infile, ofile;
+        int max_positions;
+        if (!(is >>infile) || !(is>>ofile)) {
+          sync_cout << "Mising infile or outfile" << sync_endl;
+          continue;
+        }
+        if (!(is >> max_positions)) max_positions = MAX_TRAINING_POSITIONS;
+        Analyze::gen_training_positions(infile, ofile, max_positions);
+      }
       else if (token == "print_pos_rep") {Analyze::print_pos_rep(pos);}
       else if (token == "random_moves") {
         int nmoves;

@@ -2,22 +2,7 @@ import numpy as np
 import chess
 from chess import uci
 from sys import argv, exit
-
-usage = "usage katyushabinaryfile"
-if len(argv) < 2:
-    print usage
-    exit(1)
-
-katyusha = None
-try:
-    katyusha = uci.popen_engine(argv[1])
-    katyusha.uci()
-except e:
-    print "error initializing engine"
-    print e
-    exit(1)
-
-#katyusha.info_handlers.append(uci.InfoHandler())
+from network_arch import *
 
 def extract_evals(katyusha, startFen, num_moves):
     """
@@ -62,7 +47,47 @@ def extract_evals(katyusha, startFen, num_moves):
             #This ensures minimal noisy temporal differences
             res[i+1:] = res[i]
             break
+        print board
 
     return res
 
-print extract_evals(katyusha, None, 100)
+def td_update_network(model, evals_list):
+    """
+    Updates the
+    """
+    pass
+
+
+max_batches = 100
+batch_size = 16
+#TD-learning rate
+lam = .7
+if __name__ == "__main__":
+    usage = "usage katyushabinaryfile weightsfile positions"
+    if len(argv) < 4:
+        print usage
+        exit(1)
+
+    katyusha = None
+    try:
+        katyusha = uci.popen_engine(argv[1])
+        katyusha.uci()
+    except e:
+        print "error initializing engine"
+        print e
+        exit(1)
+
+    model.load_weights(argv[2])
+
+    pos_file = open(argv[3], "r")
+    for batch_num in xrange(num_batches):
+        evals_list = []
+        for i in xrange(batch_size):
+            fen = pos_file.readline()
+            if not len(fen):
+                break
+            evals = extract_evals(katyusha, fen=fen, num_moves=12)
+            evals_list.apend(evals)
+
+
+ print extract_evals(katyusha, None, 12)
