@@ -26,12 +26,15 @@ def extract_evals(katyusha, info_handler, startFen=None, num_moves=12):
 
     katyusha_info = info_handler
     pos_reps = []
+    katyusha.go(movetime=100)
     for i in xrange(num_moves):
-        if "pos_rep" in dir(katyusha):
-            pos_reps.append(katyusha.pos_rep)
         katyusha.position(board)
+        #probably should go by depth, not time
         kinfo = katyusha.go(movetime = 1000)
         with katyusha_info:
+            if "pos_rep" in dir(katyusha):
+#                print i, katyusha.foo, katyusha.ponder, kinfo.ponder
+                pos_reps.append(katyusha.pos_rep)
             if 1 in katyusha_info.info["score"]:
                 cp = katyusha_info.info["score"][1].cp
                 mate = katyusha_info.info["score"][1].mate
@@ -54,9 +57,18 @@ def extract_evals(katyusha, info_handler, startFen=None, num_moves=12):
             #This ensures minimal noisy temporal differences
             res[i+1:] = res[i]
             break
-        print board
+#        print board
 
     return res, pos_reps
+
+def td_errors(evals, lam=.7):
+    errors = np.zeros(len(evals))
+    diffs = evals[1:]-evals[:-1]
+    N = len(evals)
+    for t in xrange(N):
+        for j in xrange(t,N-1):
+            errors[t] += diffs[j] * lam ** (j-t)
+    return errors
 
 def td_update_network(model, evals_list, lam=.7):
     """
@@ -64,17 +76,31 @@ def td_update_network(model, evals_list, lam=.7):
     """
     game_lens = [len(el[1]) for el in evals_list]
     total_positions = sum(game_lens)
-    all_evals = np.zeros(total_positions)
+    all_errors = np.zeros(total_positions)
     cur_pos = 0
-    all_reps = np.zeros((total_positions, na.total_inputs))
-
+    all_reps = np.zeros((total_positions, na.num_features))
     for evals, pos_reps in evals_list:
-        for val, pos_rep in izip(evals, pos_reps):
-            all_evals[cur_pos] = val
+        print evals,pos_reps
+        #how many moves were acutally played
+        num_moves = len(pos_reps)
+        #get error signals
+        all_errors[cur_pos:cur_pos+num_moves] = td_errors(evals[:num_moves], lam=lam)
+        for pos_rep in pos_reps:
             all_reps[cur_pos] = np.fromstring(pos_rep, sep=",")
-    
-    model.train_on_batch()
+            cur_pos += 1
 
+    training_dict = na.make_training_dict(all_reps, all_errors)
+    current_evals = model.predict(training_dict)["out"]
+
+    #I cannot directly back-propigate an arbitrary error signal
+    #I can, however force the model to fit features to outputs
+    #So, I obtain the model's current output for the inputs in consideration
+    #Next, I add the desired errors, and voila, it works!
+    #This is inefficient, but I'm not in the mood to extend Keras
+    #Tee-hee-heee
+    training_dict["out"] += np.ravel(current_evals)
+    print training_dict["out"].shape, all_errors.shape, all_errors
+    model.train_on_batch(training_dict)
 
 if __name__ == "__main__":
     usage = "usage katyushabinaryfile weightsfile positions"
@@ -90,17 +116,26 @@ if __name__ == "__main__":
         print "error initializing engine"
         print e
         exit(1)
+    weightsfile = argv[2]
 
-    na.model.load_weights(argv[2])
+    temp_npz_file = "temp_td_weights.npz"
+    na.model.load_weights(weightsfile)
+    na.save_as_npz(temp_npz_file)
     info_handler = uci.InfoHandler()
     katyusha.info_handlers.append(info_handler)
-    katyusha.setoption({"Katyusha_Learning":True})
+    katyusha.setoption({"Katyusha_Learning":True, "weightsfile":temp_npz_file})
     pos_file = open(argv[3], "r")
+    num_moves = 4
     for batch_num in xrange(max_batches):
         evals_list = []
         for i in xrange(batch_size):
             fen = pos_file.readline()
             if not len(fen):
                 break
-            evals, reps = extract_evals(katyusha, info_handler, startFen=fen, num_moves=12)
+            evals, reps = extract_evals(katyusha, info_handler, startFen=fen, num_moves=num_moves)
+            evals /= 100. #convert from centipawns to pawns
             evals_list.append((evals, reps))
+        td_update_network(na.model, evals_list)
+        na.model.save_weights("td_"+weightsfile, overwrite=True)
+        na.save_as_npz(temp_npz_file)
+        #TODO send command to katyusha to update weights

@@ -76,6 +76,10 @@ void init(OptionsMap& o) {
   o["SyzygyProbeLimit"]      << Option(6, 0, 6);
   // dump katyusha's position representations so the external learning script can update the neural net model appropriately
   o["Katyusha_Learning"] << Option(false);
+  //I can add an onchange listener, good
+  //if katyusha learning is set, update weight file before every call to go
+  //when weightsfile is changed, I should reload the weights
+  o["weightsfile"] << Option();
 }
 
 
