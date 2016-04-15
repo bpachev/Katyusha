@@ -31,6 +31,19 @@ for comp in comps:
   model.add_node(Dense(comps[comp]['output_neurons'], activation = "relu"), name = comp, input = input_name)
 
 total_inputs = sum([comps[comp]["output_neurons"] for comp in comps])
+SCORE_SCALE = 50.
+
+def make_training_dict(x, y):
+    training_dict = {}
+    ind = 0
+    for comp in comp_order:
+      inc = comps[comp]["input_neurons"]
+      training_dict["input_"+comp] = x[:,ind:ind+inc]
+      ind += inc
+
+    training_dict["out"] = y / SCORE_SCALE
+    return training_dict
+
 
 model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs= comp_order)
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")

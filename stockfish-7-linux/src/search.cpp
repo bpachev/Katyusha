@@ -348,7 +348,7 @@ void MainThread::search() {
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
-  if (Options["Katyusha Learning"])
+  if (Options["Katyusha_Learning"])
   {
     StateInfo mystates[MAX_PLY], *mystate = mystates;
     int features[Analyze::NB_FEATURES];
@@ -357,11 +357,13 @@ void MainThread::search() {
       rootPos.do_move(m, *mystate++, rootPos.gives_check(m, CheckInfo(rootPos)));
     }
 
+    std::cout << " pos_rep ";
+
     Analyze::Katyusha_pos_rep(rootPos, features);
     for (size_t i = 0; i < Analyze::NB_FEATURES; i++)
     {
-      std::cout << features[i];
       if (i) std::cout << ",";
+      std::cout << features[i];
     }
 
     for (size_t i = bestThread->rootMoves[0].pv.size(); i > 0 ;)
