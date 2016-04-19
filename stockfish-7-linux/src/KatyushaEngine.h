@@ -12,6 +12,8 @@ namespace KatyushaEngine {
    bool engine_active();
    void activate();
    void deactivate();
+   void setWeightsfile(string newname);
+   string getWeightsfile();
 }
 
 #endif

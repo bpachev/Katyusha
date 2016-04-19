@@ -6,8 +6,8 @@ import network_arch as na
 from itertools import izip
 
 
-max_batches = 1
-batch_size = 1
+max_batches = 2000
+batch_size = 16
 #TD-learning rate
 lam = .7
 
@@ -29,8 +29,7 @@ def extract_evals(katyusha, info_handler, startFen=None, num_moves=12):
     katyusha.go(movetime=100)
     for i in xrange(num_moves):
         katyusha.position(board)
-        #probably should go by depth, not time
-        kinfo = katyusha.go(movetime = 1000)
+        kinfo = katyusha.go(depth=5)
         with katyusha_info:
             if "pos_rep" in dir(katyusha):
 #                print i, katyusha.foo, katyusha.ponder, kinfo.ponder
@@ -80,7 +79,7 @@ def td_update_network(model, evals_list, lam=.7):
     cur_pos = 0
     all_reps = np.zeros((total_positions, na.num_features))
     for evals, pos_reps in evals_list:
-        print evals,pos_reps
+    #    print evals,pos_reps
         #how many moves were acutally played
         num_moves = len(pos_reps)
         #get error signals
@@ -91,7 +90,8 @@ def td_update_network(model, evals_list, lam=.7):
 
     training_dict = na.make_training_dict(all_reps, all_errors)
     current_evals = model.predict(training_dict)["out"]
-
+    print "l1 loss "+str(np.sum(np.abs(all_errors)))
+    print "l2 loss " + str(np.sum(all_errors**2))
     #I cannot directly back-propigate an arbitrary error signal
     #I can, however force the model to fit features to outputs
     #So, I obtain the model's current output for the inputs in consideration
@@ -99,7 +99,7 @@ def td_update_network(model, evals_list, lam=.7):
     #This is inefficient, but I'm not in the mood to extend Keras
     #Tee-hee-heee
     training_dict["out"] += np.ravel(current_evals)
-    print training_dict["out"].shape, all_errors.shape, all_errors
+    #print training_dict["out"].shape, all_errors.shape, all_errors
     model.train_on_batch(training_dict)
 
 if __name__ == "__main__":
@@ -125,11 +125,18 @@ if __name__ == "__main__":
     katyusha.info_handlers.append(info_handler)
     katyusha.setoption({"Katyusha_Learning":True, "weightsfile":temp_npz_file})
     pos_file = open(argv[3], "r")
-    num_moves = 4
+    fen_arr = np.array([line.strip() for line in pos_file])
+    mask = np.arange(len(fen_arr))
+    np.random.shuffle(mask)
+    fen_arr = fen_arr[mask]
+
+    num_moves = 12
     for batch_num in xrange(max_batches):
+        print "On Batch "+str(batch_num)
         evals_list = []
         for i in xrange(batch_size):
-            fen = pos_file.readline()
+            print str(i)+" out of "+str(batch_size)
+            fen = fen_arr[batch_num*batch_size + i]
             if not len(fen):
                 break
             evals, reps = extract_evals(katyusha, info_handler, startFen=fen, num_moves=num_moves)
@@ -138,4 +145,5 @@ if __name__ == "__main__":
         td_update_network(na.model, evals_list)
         na.model.save_weights("td_"+weightsfile, overwrite=True)
         na.save_as_npz(temp_npz_file)
+        katyusha.setoption({"weightsfile":temp_npz_file})
         #TODO send command to katyusha to update weights

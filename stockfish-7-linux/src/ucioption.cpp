@@ -28,6 +28,7 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "KatyushaEngine.h"
 
 using std::string;
 
@@ -41,7 +42,7 @@ void on_hash_size(const Option& o) { TT.resize(o); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option&) { Threads.read_uci_options(); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
-
+void on_weights_changed(const Option& o) {KatyushaEngine::setWeightsfile(Options["weightsfile"]);}
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -79,7 +80,7 @@ void init(OptionsMap& o) {
   //I can add an onchange listener, good
   //if katyusha learning is set, update weight file before every call to go
   //when weightsfile is changed, I should reload the weights
-  o["weightsfile"] << Option();
+  o["weightsfile"] << Option("/home/benjamin/Katyusha/stockfish-7-linux/src/katyusha_weights.npz", on_weights_changed);
 }
 
 

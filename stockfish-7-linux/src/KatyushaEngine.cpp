@@ -13,6 +13,16 @@ bool KatyushaEngine::engine_active()
 void KatyushaEngine::activate() {is_active = true;}
 void KatyushaEngine::deactivate() {is_active = false;}
 
+void KatyushaEngine::setWeightsfile(string newname)
+{
+  weightsfile = newname;
+  network.load(weightsfile);
+}
+
+string KatyushaEngine::getWeightsfile()
+{
+  return weightsfile;
+}
 
 void KatyushaEngine::init()
 {
