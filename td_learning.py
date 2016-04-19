@@ -6,8 +6,8 @@ import network_arch as na
 from itertools import izip
 
 
-max_batches = 2000
-batch_size = 16
+max_batches = 1000
+batch_size = 256
 #TD-learning rate
 lam = .7
 
@@ -90,8 +90,9 @@ def td_update_network(model, evals_list, lam=.7):
 
     training_dict = na.make_training_dict(all_reps, all_errors)
     current_evals = model.predict(training_dict)["out"]
-    print "l1 loss "+str(np.sum(np.abs(all_errors)))
-    print "l2 loss " + str(np.sum(all_errors**2))
+    n_pos = len(all_errors)
+    print "l1 loss "+str(np.sum(np.abs(all_errors))/n_pos/50.)
+    print "l2 loss " + str(np.sum(all_errors**2)/n_pos/2500.)
     #I cannot directly back-propigate an arbitrary error signal
     #I can, however force the model to fit features to outputs
     #So, I obtain the model's current output for the inputs in consideration
@@ -139,9 +140,13 @@ if __name__ == "__main__":
             fen = fen_arr[batch_num*batch_size + i]
             if not len(fen):
                 break
-            evals, reps = extract_evals(katyusha, info_handler, startFen=fen, num_moves=num_moves)
-            evals /= 100. #convert from centipawns to pawns
-            evals_list.append((evals, reps))
+            try:
+                evals, reps = extract_evals(katyusha, info_handler, startFen=fen, num_moves=num_moves)
+                evals /= 100. #convert from centipawns to pawns
+                evals_list.append((evals, reps))
+            except ValueError:
+                print "Encountered ValueError, not sure why"
+                continue
         td_update_network(na.model, evals_list)
         na.model.save_weights("td_"+weightsfile, overwrite=True)
         na.save_as_npz(temp_npz_file)
