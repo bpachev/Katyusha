@@ -7,7 +7,7 @@ from itertools import izip
 
 
 max_batches = 1000
-batch_size = 16
+batch_size = 128
 #TD-learning rate
 lam = .7
 

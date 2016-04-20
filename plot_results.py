@@ -5,8 +5,8 @@ from collections import namedtuple
 
 parser = ap.ArgumentParser(description = "Read the results of a bout between two chess engines and plot some stats.")
 parser.add_argument("result_file", type=ap.FileType('r'), help = "A file of the form produced by test_katyusha.py")
-parser.add_argument("--name1", help="Name of First Engine", default = "Engine 1")
-parser.add_arguemnt("--name2", help = "Name of Second Engine", default = "Engine 2")
+parser.add_argument("name1", help="Name of First Engine", default = "Engine 1")
+parser.add_argument("name2", help = "Name of Second Engine", default = "Engine 2")
 args = parser.parse_args()
 
 f = args.result_file
@@ -40,6 +40,10 @@ res = white_res + black_res
 
 fig, ax = plt.subplots()
 plt.title(args.name1+" vs "+args.name2)
-ax.bar(np.arange(3), res)
-ax.set_xticklabels(("Won", "Drew", "Lost"))
+rects = ax.bar(np.arange(3), res)
+for rect in rects:
+    height = rect.get_height()
+    ax.text(rect.get_x() + rect.get_width()/2, 1.01 * height, str(height), ha="center", va="bottom")
+ax.set_xticks(np.arange(3)+.4)
+ax.set_xticklabels((args.name1+" Won", "Draw", args.name2+" Won"))
 plt.show()
