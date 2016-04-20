@@ -7,7 +7,7 @@ from itertools import izip
 
 
 max_batches = 1000
-batch_size = 256
+batch_size = 16
 #TD-learning rate
 lam = .7
 
@@ -68,6 +68,44 @@ def td_errors(evals, lam=.7):
         for j in xrange(t,N-1):
             errors[t] += diffs[j] * lam ** (j-t)
     return errors
+
+def propigate_errors(model, reps, errors):
+    training_dict = na.make_training_dict(reps, errors)
+    current_evals = model.predict(training_dict)["out"]
+    n_pos = len(errors)
+    print "l1 loss "+str(np.sum(np.abs(errors))/n_pos/50.)
+    print "l2 loss " + str(np.sum(errors**2)/n_pos/2500.)
+    #I cannot directly back-propigate an arbitrary error signal
+    #I can, however force the model to fit features to outputs
+    #So, I obtain the model's current output for the inputs in consideration
+    #Next, I add the desired errors, and voila, it works!
+    #This is inefficient, but I'm not in the mood to extend Keras
+    #Tee-hee-heee
+    training_dict["out"] += np.ravel(current_evals)
+    #print training_dict["out"].shape, all_errors.shape, all_errors
+    model.train_on_batch(training_dict)
+
+
+
+def other_td_update_network(model,evals_list, lam=.7):
+    """
+    Updates the model weights to match the temporal difference loss
+    This only does updates for the starting position
+    """
+    total_positions = len(evals_list)
+    all_errors = np.zeros(total_positions)
+    cur_pos = 0
+    all_reps = np.zeros((total_positions, na.num_features))
+    for evals, pos_reps in evals_list:
+    #    print evals,pos_reps
+        #how many moves were acutally played
+        num_moves = len(pos_reps)
+        #get error signals
+        all_errors[cur_pos] = td_errors(evals[:num_moves], lam=lam)[0]
+        all_reps[cur_pos] = np.fromstring(pos_reps[0], sep=",")
+        cur_pos += 1
+    propigate_errors(model, all_reps, all_errors)
+
 
 def td_update_network(model, evals_list, lam=.7):
     """
@@ -147,7 +185,8 @@ if __name__ == "__main__":
             except ValueError:
                 print "Encountered ValueError, not sure why"
                 continue
-        td_update_network(na.model, evals_list)
+#        td_update_network(na.model, evals_list)
+        other_td_update_network(na.model, evals_list)
         na.model.save_weights("td_"+weightsfile, overwrite=True)
         na.save_as_npz(temp_npz_file)
         katyusha.setoption({"weightsfile":temp_npz_file})

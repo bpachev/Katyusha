@@ -48,7 +48,7 @@ def make_training_dict(x, y):
 model.add_node(Dense(layer1nodes, activation = "relu"), name = "layer1", inputs= comp_order)
 model.add_node(Dense(1, activation = "tanh"), name = "outlayer", input = "layer1")
 model.add_output(name= "out", input = "outlayer")
-model.compile(optimizer = "adagrad", loss = {"out":'mse'})
+model.compile(optimizer = "adagrad", loss = {"out":'mae'})
 
 def save_as_npz(outfile):
     args = {}

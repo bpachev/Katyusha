@@ -6,7 +6,7 @@ import json
 
 def parse_engine_json(jsonfile):
     obj = json.load(jsonfile)
-    engine = uci.popen_engine(obj["binary"])
+    engine = uci.popen_engine("/home/benjamin/Katyusha/"+obj["binary"])
     engine.setoption(obj["options"])
     engine.description = obj["description"]
     return engine
